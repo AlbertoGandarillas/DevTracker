@@ -22,10 +22,11 @@ export default async function Home() {
   const dbUser = email ? await getUserByEmail(email) : null;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <main className="flex min-h-screen flex-col items-center justify-start pt-2">
       <div className="text-center max-w-2xl">
         <DashboardPage />
-        {dbUser && (
+        {/* Display user information if dbUser exists */}
+        {/* {dbUser && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 className="text-xl font-semibold mb-4">User Information</h2>
             <div className="text-left space-y-2">
@@ -34,13 +35,8 @@ export default async function Home() {
               <p><strong>Role:</strong> {dbUser.role}</p>
             </div>
           </div>
-        )}
+        )} */}
         
-        <div className="mt-8 text-sm text-gray-500 mb-8">
-          <p>✅ Authentication successful</p>
-          <p>✅ Access authorized</p>
-        </div>
-
       </div>
     </main>
   );

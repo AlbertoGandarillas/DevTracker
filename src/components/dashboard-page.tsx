@@ -84,7 +84,7 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Meeting Type (Optional)</label>
+              <label className="text-sm font-medium">Meeting Type (Mandatory)</label>
               <Select value={meetingType} onValueChange={setMeetingType}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select meeting type..." />

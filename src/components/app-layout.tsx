@@ -30,7 +30,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isAdmin = true
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
@@ -95,7 +95,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                      "flex items-center gap-2 px-3 py-6 text-sm font-medium rounded-md transition-colors",
                       pathname === item.href
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:text-primary hover:bg-muted",
@@ -117,11 +117,11 @@ export function AppLayout({ children }: AppLayoutProps) {
         )}
       </header>
 
-      {/* Main Content */}
-      <main className="container py-6">{children}</main>
+      {/* Main Content - flex-1 makes it take remaining space */}
+      <main className="flex-1 container py-6">{children}</main>
 
-      {/* Footer */}
-      <footer className="border-t py-6 md:py-0">
+      {/* Footer - mt-auto pushes it to bottom on large screens, normal on mobile */}
+      <footer className="border-t py-6 md:py-0 mt-auto">
         <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
           <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
             <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
