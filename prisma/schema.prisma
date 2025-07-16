@@ -21,6 +21,8 @@ model DevTracker_User {
   role      String     @default("user") @db.NVarChar(50)
   activities DevTracker_Activity[]
   createdAt DateTime   @default(now()) @db.DateTime2
+
+  @@map("DevTracker_Users")
 }
 
 model DevTracker_Activity {
@@ -33,4 +35,6 @@ model DevTracker_Activity {
   tickets     String?  @db.NVarChar(250)
   progress    String?  @db.NVarChar(Max)
   createdAt   DateTime @default(now()) @db.DateTime2
+
+  @@map("DevTracker_Activities")
 }
