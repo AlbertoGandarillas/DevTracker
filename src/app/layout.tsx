@@ -4,12 +4,12 @@ import {
   SignInButton,
   SignedIn,
   SignedOut,
-  UserButton,
 } from '@clerk/nextjs'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import AuthGuard from '@/components/AuthGuard'
 import { Toaster } from '@/components/ui/sonner'
+import { AppLayout } from '@/components/app-layout'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -37,21 +37,26 @@ export default function RootLayout({
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <SignedIn>
             <AuthGuard>
-              <header className="flex justify-end items-center p-4 gap-4 h-16">
-                <UserButton />
-              </header>
-              {children}
+              <AppLayout>
+                {children}
+              </AppLayout>
             </AuthGuard>
           </SignedIn>
           <SignedOut>
-            <header className="flex justify-end items-center p-4 gap-4 h-16">
-              <SignInButton>
-                <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer hover:bg-[#5a3fd8] transition-colors">
-                  Sign In
-                </button>
-              </SignInButton>
-            </header>
-            {children}
+            <div className="min-h-screen bg-background">
+              <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="container flex h-16 items-center justify-end">
+                  <SignInButton>
+                    <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer hover:bg-[#5a3fd8] transition-colors">
+                      Sign In
+                    </button>
+                  </SignInButton>
+                </div>
+              </header>
+              <main className="container py-6">
+                {children}
+              </main>
+            </div>
           </SignedOut>
           <Toaster />
         </body>

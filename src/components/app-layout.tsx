@@ -5,17 +5,10 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { UserButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { Activity, Calendar, Settings, User, LogOut, Menu, X } from "lucide-react"
+import { Activity, Calendar, Settings, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -32,15 +25,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Mock user data
-  const currentUser = {
-    name: "John Doe",
-    email: "john.doe@company.com",
-    role: "admin", // or "user"
-    avatar: "/placeholder.svg?height=32&width=32",
-  }
-
-  const isAdmin = currentUser.role === "admin"
+  // For now, we'll show admin features to all users
+  // This should be updated to check the actual user role from your database
+  const isAdmin = true
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,39 +78,8 @@ export function AppLayout({ children }: AppLayoutProps) {
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
 
-            {/* User menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={currentUser.avatar || "/placeholder.svg"} alt={currentUser.name} />
-                    <AvatarFallback>
-                      {currentUser.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex items-center justify-start gap-2 p-2">
-                  <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{currentUser.name}</p>
-                    <p className="w-[200px] truncate text-sm text-muted-foreground">{currentUser.email}</p>
-                  </div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Clerk UserButton */}
+            <UserButton />
           </div>
         </div>
 

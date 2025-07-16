@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { format } from "date-fns"
+import { format, startOfWeek } from "date-fns"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner"
 import { AppLayout } from "@/components/app-layout"
 import { Clock, Calendar, User } from "lucide-react"
+import { useUser } from "@clerk/nextjs"
 
 // Mock data for recent submissions
 const mockRecentSubmissions = [
@@ -42,6 +43,7 @@ const meetingTypes = ["Dev Meeting", "EOD Update", "12pm Updates", "Stand-up", "
 export function DashboardPage() {
   const [updateText, setUpdateText] = useState("")
   const [meetingType, setMeetingType] = useState("")
+  const { user } = useUser()
 
   const handleSubmit = () => {
     if (!updateText.trim()) return
@@ -54,21 +56,20 @@ export function DashboardPage() {
     setMeetingType("")
   }
 
-  const currentUser = "John Doe" // Mock user
   const today = format(new Date(), "EEEE, MMMM do, yyyy")
+  const currentWeek = format(startOfWeek(new Date()), "MMMM do")
 
   return (
-    <AppLayout>
       <div className="space-y-6">
         {/* Welcome Section */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back, {currentUser}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.firstName || user?.username}</h1>
             <p className="text-muted-foreground mt-1">{today}</p>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" />
-            <span>Week of January 15th</span>
+            <span>Week of {currentWeek}</span>
           </div>
         </div>
 
@@ -143,6 +144,5 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
   )
 }
