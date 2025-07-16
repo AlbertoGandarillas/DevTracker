@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model DevTracker_User {
+  id        String     @id @default(uuid()) @db.UniqueIdentifier
+  email     String     @unique @db.NVarChar(256)
+  name      String?    @db.NVarChar(100)
+  role      String     @default("user") @db.NVarChar(50)
+  activities DevTracker_Activity[]
+  createdAt DateTime   @default(now()) @db.DateTime2
+}
+
+model DevTracker_Activity {
+  id          String   @id @default(uuid()) @db.UniqueIdentifier
+  userId      String   @db.UniqueIdentifier
+  user        DevTracker_User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  meetingType String?  @db.NVarChar(100)
+  note        String?  @db.NVarChar(Max)
+  tickets     String?  @db.NVarChar(250)
+  progress    String?  @db.NVarChar(Max)
+  createdAt   DateTime @default(now()) @db.DateTime2
+}
