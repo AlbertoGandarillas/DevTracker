@@ -3,18 +3,10 @@
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 
-interface User {
-  id: string;
-  email: string;
-  name: string | null;
-  role: string;
-}
-
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useUser();
   const [isValidated, setIsValidated] = useState(false);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
-  const [userData, setUserData] = useState<User | null>(null);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -28,7 +20,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       const data = await response.json();
 
       if (response.ok) {
-        setUserData(data.user);
         setIsValidated(true);
         setIsUnauthorized(false);
       } else if (data.unauthorized) {

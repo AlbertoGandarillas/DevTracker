@@ -1,5 +1,6 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { getUserByEmail } from '@/lib/auth';
+import { DashboardPage } from '@/components/dashboard-page';
 
 export default async function Home() {
   const user = await currentUser();
@@ -27,9 +28,9 @@ export default async function Home() {
         <p className="text-lg text-gray-600 mb-8">
           Your development activity tracking dashboard
         </p>
-        
+        <DashboardPage />
         {dbUser && (
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 className="text-xl font-semibold mb-4">User Information</h2>
             <div className="text-left space-y-2">
               <p><strong>Name:</strong> {dbUser.name || 'Not set'}</p>
@@ -39,10 +40,11 @@ export default async function Home() {
           </div>
         )}
         
-        <div className="mt-8 text-sm text-gray-500">
+        <div className="mt-8 text-sm text-gray-500 mb-8">
           <p>✅ Authentication successful</p>
           <p>✅ Access authorized</p>
         </div>
+
       </div>
     </main>
   );

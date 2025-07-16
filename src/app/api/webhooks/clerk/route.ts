@@ -44,10 +44,10 @@ export async function POST(req: Request) {
   const eventType = body.type;
 
   if (eventType === 'user.created' || eventType === 'user.updated') {
-    const { id, email_addresses, first_name, last_name } = body.data;
+    const { email_addresses, first_name, last_name } = body.data;
     
     // Get the primary email
-    const primaryEmail = email_addresses?.find((email: any) => email.id === body.data.primary_email_address_id);
+    const primaryEmail = email_addresses?.find((email: { id: string; email_address: string }) => email.id === body.data.primary_email_address_id);
     
     if (!primaryEmail?.email_address) {
       return new Response('No primary email found', { status: 400 });
