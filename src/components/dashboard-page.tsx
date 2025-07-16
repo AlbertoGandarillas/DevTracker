@@ -43,17 +43,71 @@ const meetingTypes = ["Dev Meeting", "EOD Update", "12pm Updates", "Stand-up", "
 export function DashboardPage() {
   const [updateText, setUpdateText] = useState("")
   const [meetingType, setMeetingType] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errors, setErrors] = useState<{ meetingType?: string; activityDetails?: string }>({})
   const { user } = useUser()
 
-  const handleSubmit = () => {
-    if (!updateText.trim()) return
+  const handleSubmit = async () => {
+    // Clear previous errors
+    setErrors({})
 
-    toast("Update submitted successfully", {
-      description: "Your daily activity has been logged.",
-    })
+    // Client-side validation
+    const newErrors: { meetingType?: string; activityDetails?: string } = {}
 
-    setUpdateText("")
-    setMeetingType("")
+    if (!meetingType.trim()) {
+      newErrors.meetingType = "Meeting type is required"
+      toast.error("Please select a meeting type", {
+        description: "Meeting type is required to submit your update."
+      })
+    }
+
+    if (!updateText.trim()) {
+      newErrors.activityDetails = "Activity details are required"
+      toast.error("Please enter activity details", {
+        description: "Activity details are required to submit your update."
+      })
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/activities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          meetingType: meetingType.trim(),
+          activityDetails: updateText.trim(),
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit activity')
+      }
+
+      toast.success("Update submitted successfully", {
+        description: "Your daily activity has been logged.",
+      })
+
+      setUpdateText("")
+      setMeetingType("")
+      setErrors({})
+    } catch (error) {
+      console.error('Error submitting activity:', error)
+      toast.error("Failed to submit update", {
+        description: error instanceof Error ? error.message : "Please try again later."
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const today = format(new Date(), "EEEE, MMMM do, yyyy")
@@ -85,8 +139,16 @@ export function DashboardPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Meeting Type (Mandatory)</label>
-              <Select value={meetingType} onValueChange={setMeetingType}>
-                <SelectTrigger>
+              <Select 
+                value={meetingType} 
+                onValueChange={(value) => {
+                  setMeetingType(value)
+                  if (errors.meetingType) {
+                    setErrors(prev => ({ ...prev, meetingType: undefined }))
+                  }
+                }}
+              >
+                <SelectTrigger className={errors.meetingType ? "border-red-500" : ""}>
                   <SelectValue placeholder="Select meeting type..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -97,6 +159,9 @@ export function DashboardPage() {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.meetingType && (
+                <p className="text-sm text-red-500">{errors.meetingType}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -104,13 +169,25 @@ export function DashboardPage() {
               <Textarea
                 placeholder="Enter today's progress, tickets worked on, issues, or expected completions..."
                 value={updateText}
-                onChange={(e) => setUpdateText(e.target.value)}
-                className="min-h-[120px] resize-none"
+                onChange={(e) => {
+                  setUpdateText(e.target.value)
+                  if (errors.activityDetails) {
+                    setErrors(prev => ({ ...prev, activityDetails: undefined }))
+                  }
+                }}
+                className={`min-h-[120px] resize-none ${errors.activityDetails ? "border-red-500" : ""}`}
               />
+              {errors.activityDetails && (
+                <p className="text-sm text-red-500">{errors.activityDetails}</p>
+              )}
             </div>
 
-            <Button onClick={handleSubmit} disabled={!updateText.trim()} className="w-full sm:w-auto">
-              Submit Update
+            <Button 
+              onClick={handleSubmit} 
+              disabled={!updateText.trim() || !meetingType.trim() || isSubmitting} 
+              className="w-full sm:w-auto"
+            >
+              {isSubmitting ? "Submitting..." : "Submit Update"}
             </Button>
           </CardContent>
         </Card>
