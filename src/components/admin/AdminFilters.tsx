@@ -57,10 +57,8 @@ export function AdminFilters({
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Filter by Developer</label>
           <FormControl fullWidth size="small">
-            <InputLabel>Developer</InputLabel>
             <Select
               value={selectedDeveloper}
-              label="Developer"
               onChange={(e) => onDeveloperChange(e.target.value)}
             >
               {developers.map((developer) => (
@@ -76,10 +74,8 @@ export function AdminFilters({
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Filter by Meeting Type</label>
           <FormControl fullWidth size="small">
-            <InputLabel>Meeting Type</InputLabel>
             <Select
               value={selectedMeetingType}
-              label="Meeting Type"
               onChange={(e) => onMeetingTypeChange(e.target.value)}
             >
               {meetingTypes.map((type) => (

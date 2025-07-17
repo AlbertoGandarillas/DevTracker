@@ -12,17 +12,17 @@ interface StatsCardProps {
 
 export function StatsCard({ title, value, description, icon: Icon, className, accentColor = "text-muted-foreground" }: StatsCardProps) {
   return (
-    <Card className={`relative overflow-hidden ${className}`}>
-      {/* Left accent bar */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor.replace('text-', 'bg-')}`}></div>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pl-4">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className={`h-4 w-4 ${accentColor}`} />
-      </CardHeader>
-      <CardContent className="pl-4">
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{description}</p>
-      </CardContent>
-    </Card>
+    <div className={`relative ${className}`}>
+      <div className="flex flex-col items-center text-center space-y-2">
+        <div className="flex items-center gap-2">
+          <Icon className={`h-5 w-5 ${accentColor}`} />
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-bold text-gray-900">{value}</span>
+            <span className="text-sm font-medium text-gray-600">{title}</span>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500">{description}</p>
+      </div>
+    </div>
   )
 } 
