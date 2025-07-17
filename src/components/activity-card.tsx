@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Edit, Trash2 } from "lucide-react"
+import { parseActivityDate } from "@/lib/utils"
 
 import { Activity } from "@/types"
 
@@ -30,7 +31,7 @@ export function ActivityCard({
             {activity.meetingType}
           </Badge>
           <span className="text-sm text-gray-600 font-medium">
-            {format(new Date(activity.date), "MMM d")}
+            {format(parseActivityDate(activity.date), "MMM d")}
           </span>
           {isAdmin && activity.userName && (
             <Badge variant="outline" className="text-xs">

@@ -7,6 +7,7 @@ import { ActivityList } from "@/components/activity-list"
 import { useActivities } from "@/hooks/useActivities"
 import { useUser } from "@/hooks/useUser"
 import { isSameDay } from "date-fns"
+import { parseActivityDate } from "@/lib/utils"
 
 export function HistoryPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -19,7 +20,7 @@ export function HistoryPage() {
   })
 
   const hasActivityOnDate = (date: Date) => {
-    return activities.some((activity) => isSameDay(new Date(activity.date), date))
+    return activities.some((activity) => isSameDay(parseActivityDate(activity.date), date))
   }
 
   const navigateMonth = (direction: "prev" | "next") => {

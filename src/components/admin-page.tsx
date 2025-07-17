@@ -16,6 +16,7 @@ import { ErrorMessage } from "@/components/ui/error-message"
 import { useAdminActivities } from "@/hooks/useActivities"
 import { useUsers } from "@/hooks/useUser"
 import { AdminActivity, User } from "@/types"
+import { parseActivityDate } from "@/lib/utils"
 
 export function AdminPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -54,7 +55,7 @@ export function AdminPage() {
     // Prepare data for export
     const exportData = filteredActivities.map(activity => ({
       Developer: activity.developer,
-      Date: format(new Date(activity.date), "MMM d, yyyy"),
+      Date: format(parseActivityDate(activity.date), "MMM d, yyyy"),
       'Meeting Type': activity.meetingType,
       Summary: activity.summary,
       Tickets: activity.tickets.join(', '),
@@ -96,7 +97,7 @@ export function AdminPage() {
       accessorKey: "date",
       header: "Date",
       size: 100,
-      Cell: ({ cell }: any) => format(new Date(cell.getValue()), "MMM d"),
+      Cell: ({ cell }: any) => format(parseActivityDate(cell.getValue()), "MMM d"),
     },
     {
       accessorKey: "meetingType",
