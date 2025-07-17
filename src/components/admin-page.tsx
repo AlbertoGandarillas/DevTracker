@@ -104,31 +104,15 @@ export function AdminPage() {
     return (
       <div className="space-y-6">
         {/* Team Overview Banner */}
-        <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-6 border border-gray-200">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold tracking-tight text-purple-700">
+              <h1 className="text-3xl font-bold tracking-tight text-indigo-900">
                 Team Overview
               </h1>
-              <p className="text-gray-600 mt-1 font-medium">
+              <p className="text-indigo-700 mt-1 font-medium">
                 Monitor and manage team activity across all developers
               </p>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="w-4 h-4 bg-gray-600 rounded-sm flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-sm"></div>
-                </div>
-                <span className="text-sm text-gray-600">Administrator Dashboard</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-4 text-right">
-              <div>
-                <div className="text-2xl font-bold text-purple-700">0</div>
-                <div className="text-sm text-gray-600">Total Activities</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-600">0</div>
-                <div className="text-sm text-gray-600">Active Devs</div>
-              </div>
             </div>
           </div>
         </div>
@@ -166,31 +150,15 @@ export function AdminPage() {
     return (
       <div className="space-y-6">
         {/* Team Overview Banner */}
-        <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-6 border border-gray-200">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold tracking-tight text-purple-700">
+              <h1 className="text-3xl font-bold tracking-tight text-indigo-900">
                 Team Overview
               </h1>
-              <p className="text-gray-600 mt-1 font-medium">
+              <p className="text-indigo-700 mt-1 font-medium">
                 Monitor and manage team activity across all developers
               </p>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="w-4 h-4 bg-gray-600 rounded-sm flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-sm"></div>
-                </div>
-                <span className="text-sm text-gray-600">Administrator Dashboard</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-4 text-right">
-              <div>
-                <div className="text-2xl font-bold text-purple-700">0</div>
-                <div className="text-sm text-gray-600">Total Activities</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-600">0</div>
-                <div className="text-sm text-gray-600">Active Devs</div>
-              </div>
             </div>
           </div>
         </div>
@@ -227,21 +195,15 @@ export function AdminPage() {
   return (
     <div className="space-y-6">
       {/* Team Overview Banner */}
-      <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-6 border border-gray-200">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold tracking-tight text-purple-700">
+            <h1 className="text-3xl font-bold tracking-tight text-indigo-900">
               Team Overview
             </h1>
-            <p className="text-gray-600 mt-1 font-medium">
+            <p className="text-indigo-700 mt-1 font-medium">
               Monitor and manage team activity across all developers
             </p>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="w-4 h-4 bg-gray-600 rounded-sm flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-sm"></div>
-              </div>
-              <span className="text-sm text-gray-600">Administrator Dashboard</span>
-            </div>
           </div>
         </div>
       </div>
@@ -352,6 +314,24 @@ export function AdminPage() {
             muiTableBodyRowProps={{ hover: true }}
             initialState={{ density: 'compact', pagination: { pageSize: 10, pageIndex: 0 } }}
             positionToolbarAlertBanner="bottom"
+            enableTopToolbar={false}
+            muiTableProps={{
+              sx: {
+                '& .MuiTableCell-root': {
+                  fontSize: '0.875rem',
+                  fontFamily: 'inherit',
+                },
+                '& .MuiTableHead-root .MuiTableCell-root': {
+                  fontWeight: 600,
+                },
+              },
+            }}
+            muiPaginationProps={{
+              sx: {
+                fontSize: '0.875rem',
+                fontFamily: 'inherit',
+              },
+            }}
           />
         </CardContent>
       </Card>

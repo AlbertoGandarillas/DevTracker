@@ -86,11 +86,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                   >
                     <item.icon className="h-4 w-4" />
                     {item.name}
-                    {item.adminOnly && (
-                      <Badge variant="secondary" className="text-xs ml-1">
-                        Admin
-                      </Badge>
-                    )}
                   </Link>
                 )
               })}

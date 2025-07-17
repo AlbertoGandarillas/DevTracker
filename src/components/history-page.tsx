@@ -49,9 +49,16 @@ export function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Activity History</h1>
-        <p className="text-muted-foreground mt-1">View and manage your past activity logs</p>
+      {/* Activity History Banner */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold tracking-tight text-indigo-900">
+              Activity History
+            </h1>
+            <p className="text-indigo-700 mt-1 font-medium">View and manage your past activity logs</p>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
