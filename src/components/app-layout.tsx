@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { UserButton } from "@clerk/nextjs"
@@ -24,10 +24,29 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
 
-  // For now, we'll show admin features to all users
-  // This should be updated to check the actual user role from your database
-  const isAdmin = true
+  useEffect(() => {
+    async function fetchRole() {
+      try {
+        const res = await fetch("/api/user/me")
+        const data = await res.json()
+        setIsAdmin(data.user?.role === "admin")
+      } catch {
+        setIsAdmin(false)
+      }
+    }
+    fetchRole()
+  }, [])
+
+  // Show loading state for navigation while checking admin
+  if (isAdmin === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
