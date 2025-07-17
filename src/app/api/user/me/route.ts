@@ -1,47 +1,18 @@
-import { auth } from '@clerk/nextjs/server';
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest } from 'next/server';
+import { requireAuth, createErrorResponse, createSuccessResponse, AuthenticatedUser } from '@/lib/api';
 
-export async function GET(request: NextRequest) {
+export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Get user data from Clerk to find the database user
-    const response = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to fetch user data' }, { status: 500 });
-    }
-    const userData = await response.json();
-    const email = userData.email_addresses?.[0]?.email_address;
-    if (!email) {
-      return NextResponse.json({ error: 'No email found' }, { status: 400 });
-    }
-    // Find the user in our database
-    const dbUser = await prisma.devTracker_User.findUnique({
-      where: { email: email.toLowerCase() }
-    });
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found in database' }, { status: 404 });
-    }
-    return NextResponse.json({ 
-      success: true, 
+    return createSuccessResponse({
       user: {
-        id: dbUser.id,
-        email: dbUser.email,
-        name: dbUser.name,
-        role: dbUser.role
+        id: user.dbUser.id,
+        email: user.dbUser.email,
+        name: user.dbUser.name,
+        role: user.dbUser.role
       }
     });
   } catch (error) {
     console.error('Error fetching user:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return createErrorResponse('Internal server error', 500);
   }
-} 
+}); 

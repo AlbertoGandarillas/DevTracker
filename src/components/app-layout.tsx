@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { UserButton } from "@clerk/nextjs"
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Activity, Calendar, Settings, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useUser } from "@/hooks/useUser"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Activity },
@@ -24,26 +26,13 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    async function fetchRole() {
-      try {
-        const res = await fetch("/api/user/me")
-        const data = await res.json()
-        setIsAdmin(data.user?.role === "admin")
-      } catch {
-        setIsAdmin(false)
-      }
-    }
-    fetchRole()
-  }, [])
+  const { isAdmin, loading } = useUser()
 
   // Show loading state for navigation while checking admin
-  if (isAdmin === null) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+        <LoadingSpinner size={64} text="Loading..." />
       </div>
     )
   }

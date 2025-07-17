@@ -1,76 +1,21 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { format, startOfWeek } from "date-fns"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { AppLayout } from "@/components/app-layout"
-import { Clock, Calendar, User } from "lucide-react"
+import { Calendar } from "lucide-react"
 import { useUser } from "@clerk/nextjs"
-import { ActivityCard, Activity } from "@/components/activity-card"
-
-const meetingTypes = ["Dev Meeting", "EOD Update", "12pm Updates", "Stand-up", "Code Review", "Planning"]
+import { ActivityForm } from "@/components/activity-form"
+import { ActivityList } from "@/components/activity-list"
+import { useActivities } from "@/hooks/useActivities"
+import { ActivityFormData } from "@/types"
 
 export function DashboardPage() {
-  const [updateText, setUpdateText] = useState("")
-  const [meetingType, setMeetingType] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errors, setErrors] = useState<{ meetingType?: string; activityDetails?: string }>({})
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [loadingActivities, setLoadingActivities] = useState(true);
-  const [activitiesError, setActivitiesError] = useState<string | null>(null);
   const { user } = useUser()
+  const { activities, loading: loadingActivities, error: activitiesError, refetch } = useActivities({ days: 7, limit: 10 })
 
-  // Fetch activities for the current user
-  const fetchActivities = async () => {
-    setLoadingActivities(true);
-    setActivitiesError(null);
-    try {
-      const res = await fetch("/api/activities?days=7&limit=10");
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to fetch activities");
-      setActivities(data.activities || []);
-    } catch (err: any) {
-      setActivitiesError(err.message || "Failed to fetch activities");
-    } finally {
-      setLoadingActivities(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchActivities();
-  }, []);
-
-  const handleSubmit = async () => {
-    // Clear previous errors
-    setErrors({})
-
-    // Client-side validation
-    const newErrors: { meetingType?: string; activityDetails?: string } = {}
-
-    if (!meetingType.trim()) {
-      newErrors.meetingType = "Meeting type is required"
-      toast.error("Please select a meeting type", {
-        description: "Meeting type is required to submit your update."
-      })
-    }
-
-    if (!updateText.trim()) {
-      newErrors.activityDetails = "Activity details are required"
-      toast.error("Please enter activity details", {
-        description: "Activity details are required to submit your update."
-      })
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
-    }
-
+  const handleSubmit = async (formData: ActivityFormData) => {
     setIsSubmitting(true)
 
     try {
@@ -80,8 +25,8 @@ export function DashboardPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          meetingType: meetingType.trim(),
-          activityDetails: updateText.trim(),
+          meetingType: formData.meetingType.trim(),
+          activityDetails: formData.activityDetails.trim(),
         }),
       })
 
@@ -95,15 +40,13 @@ export function DashboardPage() {
         description: "Your daily activity has been logged.",
       })
 
-      setUpdateText("")
-      setMeetingType("")
-      setErrors({})
-      await fetchActivities(); // Refresh activities after submit
+      await refetch() // Refresh activities after submit
     } catch (error) {
       console.error('Error submitting activity:', error)
       toast.error("Failed to submit update", {
         description: error instanceof Error ? error.message : "Please try again later."
       })
+      throw error // Re-throw to let the form handle the error state
     } finally {
       setIsSubmitting(false)
     }
@@ -113,107 +56,30 @@ export function DashboardPage() {
   const currentWeek = format(startOfWeek(new Date()), "MMMM do")
 
   return (
-      <div className="space-y-6">
-        {/* Welcome Section */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.firstName || user?.username}</h1>
-            <p className="text-muted-foreground mt-1">{today}</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span>Week of {currentWeek}</span>
-          </div>
+    <div className="space-y-6">
+      {/* Welcome Section */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.firstName || user?.username}</h1>
+          <p className="text-muted-foreground mt-1">{today}</p>
         </div>
-
-        {/* Quick Activity Input */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Today&apos;s Update
-            </CardTitle>
-            <CardDescription>Log your progress, tickets worked on, issues, or expected completions</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Meeting Type (Mandatory)</label>
-              <Select 
-                value={meetingType} 
-                onValueChange={(value) => {
-                  setMeetingType(value)
-                  if (errors.meetingType) {
-                    setErrors(prev => ({ ...prev, meetingType: undefined }))
-                  }
-                }}
-              >
-                <SelectTrigger className={errors.meetingType ? "border-red-500" : ""}>
-                  <SelectValue placeholder="Select meeting type..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {meetingTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.meetingType && (
-                <p className="text-sm text-red-500">{errors.meetingType}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Activity Details</label>
-              <Textarea
-                placeholder="Enter today's progress, tickets worked on, issues, or expected completions..."
-                value={updateText}
-                onChange={(e) => {
-                  setUpdateText(e.target.value)
-                  if (errors.activityDetails) {
-                    setErrors(prev => ({ ...prev, activityDetails: undefined }))
-                  }
-                }}
-                className={`min-h-[120px] resize-none ${errors.activityDetails ? "border-red-500" : ""}`}
-              />
-              {errors.activityDetails && (
-                <p className="text-sm text-red-500">{errors.activityDetails}</p>
-              )}
-            </div>
-
-            <Button 
-              onClick={handleSubmit} 
-              disabled={!updateText.trim() || !meetingType.trim() || isSubmitting} 
-              className="w-full sm:w-auto"
-            >
-              {isSubmitting ? "Submitting..." : "Submit Update"}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Recent Submissions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Recent Submissions
-            </CardTitle>
-            <CardDescription>Your activity logs from the past 7 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loadingActivities ? (
-              <p>Loading activities...</p>
-            ) : activitiesError ? (
-              <p className="text-red-500">{activitiesError}</p>
-            ) : (
-              <div className="space-y-4">
-                {activities.map((activity) => (
-                  <ActivityCard key={activity.id} activity={activity} />
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Calendar className="h-4 w-4" />
+          <span>Week of {currentWeek}</span>
+        </div>
       </div>
+
+      {/* Activity Form */}
+      <ActivityForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+
+      {/* Recent Submissions */}
+      <ActivityList
+        activities={activities}
+        loading={loadingActivities}
+        error={activitiesError}
+        title="Recent Submissions"
+        emptyMessage="No recent submissions found"
+      />
+    </div>
   )
 }

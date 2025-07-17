@@ -5,15 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Edit, Trash2 } from "lucide-react"
 
-export interface Activity {
-  id: string
-  date: string
-  meetingType: string
-  summary: string
-  timestamp: string
-  tickets?: string[]
-  userName?: string // For admin view to show which user created the activity
-}
+import { Activity } from "@/types"
 
 interface ActivityCardProps {
   activity: Activity

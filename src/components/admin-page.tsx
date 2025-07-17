@@ -1,91 +1,33 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import { format } from "date-fns"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { AppLayout } from "@/components/app-layout"
 import { Search, Download, Filter, Users, Activity, Calendar, AlertCircle } from "lucide-react"
 import { MaterialReactTable } from "material-react-table"
 import { Box, MenuItem, Select, FormControl, InputLabel, Alert } from "@mui/material"
-
-// TypeScript interfaces
-interface Activity {
-  id: string
-  developer: string
-  date: string
-  meetingType: string
-  summary: string
-  tickets: string[]
-  submittedAt: string
-}
-
-interface User {
-  id: string
-  name: string
-  email: string
-}
-
-interface Stats {
-  totalActivities: number
-  activeDevelopers: number
-  thisWeek: number
-}
+import { StatsCard } from "@/components/ui/stats-card"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { ErrorMessage } from "@/components/ui/error-message"
+import { useAdminActivities } from "@/hooks/useActivities"
+import { useUsers } from "@/hooks/useUser"
+import { AdminActivity, User } from "@/types"
 
 export function AdminPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedDeveloper, setSelectedDeveloper] = useState<string>("All")
   const [selectedMeetingType, setSelectedMeetingType] = useState<string>("All")
-  const [activities, setActivities] = useState<Activity[]>([])
-  const [filteredActivities, setFilteredActivities] = useState<Activity[]>([])
-  const [users, setUsers] = useState<User[]>([])
-  const [stats, setStats] = useState<Stats>({ totalActivities: 0, activeDevelopers: 0, thisWeek: 0 })
-  const [loading, setLoading] = useState(true)
-  const [loadingUsers, setLoadingUsers] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [usersError, setUsersError] = useState<string | null>(null)
+  
+  const { activities, stats, loading, error } = useAdminActivities()
+  const { users, loading: loadingUsers, error: usersError } = useUsers()
 
   const meetingTypes = useMemo(() => ["All", ...Array.from(new Set(activities.map(a => a.meetingType)))], [activities])
 
-  // Fetch activities
-  useEffect(() => {
-    setLoading(true)
-    setError(null)
-    fetch("/api/admin/activities")
-      .then(res => res.json())
-      .then(data => {
-        if (!data.success) throw new Error(data.error || "Failed to fetch activities")
-        setActivities(data.activities || [])
-        setStats(data.stats || { totalActivities: 0, activeDevelopers: 0, thisWeek: 0 })
-        setLoading(false)
-      })
-      .catch((err) => {
-        setError(err.message || "Failed to fetch activities")
-        setLoading(false)
-      })
-  }, [])
-
-  // Fetch users for developer dropdown
-  useEffect(() => {
-    setLoadingUsers(true)
-    setUsersError(null)
-    fetch("/api/admin/users")
-      .then(res => res.json())
-      .then(data => {
-        if (!data.success) throw new Error(data.error || "Failed to fetch users")
-        setUsers(data.users || [])
-        setLoadingUsers(false)
-      })
-      .catch((err) => {
-        setUsersError(err.message || "Failed to fetch users")
-        setLoadingUsers(false)
-      })
-  }, [])
-
   // Filtering logic
-  useEffect(() => {
+  const filteredActivities = useMemo(() => {
     let filtered = activities
     if (searchTerm) {
       filtered = filtered.filter(
@@ -101,12 +43,11 @@ export function AdminPage() {
     if (selectedMeetingType !== "All") {
       filtered = filtered.filter((activity) => activity.meetingType === selectedMeetingType)
     }
-    setFilteredActivities(filtered)
+    return filtered
   }, [activities, searchTerm, selectedDeveloper, selectedMeetingType])
 
   const handleExportCSV = () => {
     // Export CSV functionality (can be implemented with Material React Table's built-in export)
-    // For now, just log
     console.log("Exporting CSV...")
   }
 
@@ -159,6 +100,30 @@ export function AdminPage() {
     },
   ], [])
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Team Overview</h1>
+          <p className="text-muted-foreground mt-1">Monitor and manage team activity across all developers</p>
+        </div>
+        <LoadingSpinner text="Loading admin data..." />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Team Overview</h1>
+          <p className="text-muted-foreground mt-1">Monitor and manage team activity across all developers</p>
+        </div>
+        <ErrorMessage message={error} />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -168,36 +133,24 @@ export function AdminPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Activities</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalActivities}</div>
-            <p className="text-xs text-muted-foreground">All time entries</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Developers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.activeDevelopers}</div>
-            <p className="text-xs text-muted-foreground">Team members logging activities</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Week</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.thisWeek}</div>
-            <p className="text-xs text-muted-foreground">Recent activity entries</p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Total Activities"
+          value={stats.totalActivities}
+          description="All time entries"
+          icon={Activity}
+        />
+        <StatsCard
+          title="Active Developers"
+          value={stats.activeDevelopers}
+          description="Team members logging activities"
+          icon={Users}
+        />
+        <StatsCard
+          title="This Week"
+          value={stats.thisWeek}
+          description="Recent activity entries"
+          icon={Calendar}
+        />
       </div>
 
       {/* Filters */}
