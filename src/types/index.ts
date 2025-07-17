@@ -39,6 +39,8 @@ export interface ApiResponse<T = any> {
 export interface ActivityFormData {
   meetingType: string
   activityDetails: string
+  date?: string
+  createdAt?: string
 }
 
 export interface ValidationErrors {

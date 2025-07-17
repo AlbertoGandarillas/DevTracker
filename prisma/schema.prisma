@@ -34,7 +34,7 @@ model DevTracker_Activity {
   note        String?  @db.NVarChar(Max)
   tickets     String?  @db.NVarChar(250)
   progress    String?  @db.NVarChar(Max)
-  createdAt   DateTime @default(now()) @db.DateTime2
+  createdAt   DateTime
 
   @@map("DevTracker_Activities")
 }

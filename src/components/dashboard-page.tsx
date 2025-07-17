@@ -19,6 +19,11 @@ export function DashboardPage() {
     setIsSubmitting(true)
 
     try {
+      // Get current date and time in user's local timezone
+      const now = new Date()
+      const localDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const localTimestamp = now.toISOString()
+      
       const response = await fetch('/api/activities', {
         method: 'POST',
         headers: {
@@ -27,6 +32,8 @@ export function DashboardPage() {
         body: JSON.stringify({
           meetingType: formData.meetingType.trim(),
           activityDetails: formData.activityDetails.trim(),
+          date: localDate.toISOString(), // Send local date to server
+          createdAt: localTimestamp, // Send local timestamp to server
         }),
       })
 

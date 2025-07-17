@@ -5,7 +5,7 @@ import { requireAuth, createErrorResponse, createSuccessResponse, AuthenticatedU
 export const POST = requireAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
     const body = await request.json();
-    const { meetingType, activityDetails } = body;
+    const { meetingType, activityDetails, date, createdAt } = body;
 
     // Validation
     if (!meetingType || !meetingType.trim()) {
@@ -16,14 +16,43 @@ export const POST = requireAuth(async (request: NextRequest, user: Authenticated
       return createErrorResponse('Activity details are required');
     }
 
+    // Use provided date or fallback to current date
+    let activityDate: Date;
+    if (date) {
+      const providedDate = new Date(date);
+      // Validate the date
+      if (isNaN(providedDate.getTime())) {
+        return createErrorResponse('Invalid date provided');
+      }
+      // Create date-only object (no time component)
+      activityDate = new Date(providedDate.getFullYear(), providedDate.getMonth(), providedDate.getDate());
+    } else {
+      // Create date-only object for current date (no time component)
+      const now = new Date();
+      activityDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }
+
+    // Use provided createdAt timestamp or fallback to current time
+    let activityCreatedAt: Date;
+    if (createdAt) {
+      activityCreatedAt = new Date(createdAt);
+      // Validate the timestamp
+      if (isNaN(activityCreatedAt.getTime())) {
+        return createErrorResponse('Invalid timestamp provided');
+      }
+    } else {
+      activityCreatedAt = new Date();
+    }
+
     // Create the activity
     const activity = await prisma.devTracker_Activity.create({
       data: {
         userId: user.dbUser.id,
-        date: new Date(),
+        date: activityDate,
         meetingType: meetingType.trim(),
         note: activityDetails.trim(),
         progress: activityDetails.trim(),
+        createdAt: activityCreatedAt,
       },
     });
 
