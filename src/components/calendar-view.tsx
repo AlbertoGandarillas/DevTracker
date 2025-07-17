@@ -1,6 +1,6 @@
 "use client"
 
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from "date-fns"
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, startOfWeek, endOfWeek } from "date-fns"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react"
@@ -23,7 +23,11 @@ export function CalendarView({
 }: CalendarViewProps) {
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
-  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd })
+  
+  // Get the calendar view (including days from previous/next month to fill the grid)
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 }) // Start from Sunday
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 }) // End on Saturday
+  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd })
 
   return (
     <Card>
@@ -53,21 +57,27 @@ export function CalendarView({
           ))}
         </div>
         <div className="grid grid-cols-7 gap-1">
-          {daysInMonth.map((day) => (
-            <button
-              key={day.toISOString()}
-              onClick={() => onDateSelect(day)}
-              className={cn(
-                "p-2 text-sm rounded-md transition-colors hover:bg-muted",
-                selectedDate && isSameDay(day, selectedDate) && "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600",
-                isToday(day) && !selectedDate && "bg-primary text-primary-foreground hover:bg-primary/90",
-                hasActivityOnDate(day) && !selectedDate && !isToday(day) && "bg-blue-50 text-blue-700 hover:bg-blue-100",
-              )}
-            >
-              {format(day, "d")}
-              {hasActivityOnDate(day) && <div className="w-1 h-1 bg-current rounded-full mx-auto mt-1" />}
-            </button>
-          ))}
+          {calendarDays.map((day) => {
+            const isCurrentMonth = day.getMonth() === currentDate.getMonth()
+            const isCurrentYear = day.getFullYear() === currentDate.getFullYear()
+            
+            return (
+              <button
+                key={day.toISOString()}
+                onClick={() => onDateSelect(day)}
+                className={cn(
+                  "p-2 text-sm rounded-md transition-colors hover:bg-muted",
+                  !isCurrentMonth && "text-muted-foreground/50",
+                  selectedDate && isSameDay(day, selectedDate) && "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600",
+                  isToday(day) && !selectedDate && "bg-primary text-primary-foreground hover:bg-primary/90",
+                  hasActivityOnDate(day) && !selectedDate && !isToday(day) && isCurrentMonth && "bg-blue-50 text-blue-700 hover:bg-blue-100",
+                )}
+              >
+                {format(day, "d")}
+                {hasActivityOnDate(day) && isCurrentMonth && <div className="w-1 h-1 bg-current rounded-full mx-auto mt-1" />}
+              </button>
+            )
+          })}
         </div>
       </CardContent>
     </Card>
