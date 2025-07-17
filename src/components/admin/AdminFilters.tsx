@@ -1,7 +1,13 @@
 import { Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Box, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AdminFiltersProps {
   searchTerm: string;
@@ -56,35 +62,35 @@ export function AdminFilters({
         {/* Developer Filter */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Filter by Developer</label>
-          <FormControl fullWidth size="small">
-            <Select
-              value={selectedDeveloper}
-              onChange={(e) => onDeveloperChange(e.target.value)}
-            >
+          <Select value={selectedDeveloper} onValueChange={onDeveloperChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select developer" />
+            </SelectTrigger>
+            <SelectContent>
               {developers.map((developer) => (
-                <MenuItem key={developer} value={developer}>
+                <SelectItem key={developer} value={developer}>
                   {developer}
-                </MenuItem>
+                </SelectItem>
               ))}
-            </Select>
-          </FormControl>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Meeting Type Filter */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Filter by Meeting Type</label>
-          <FormControl fullWidth size="small">
-            <Select
-              value={selectedMeetingType}
-              onChange={(e) => onMeetingTypeChange(e.target.value)}
-            >
+          <Select value={selectedMeetingType} onValueChange={onMeetingTypeChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select meeting type" />
+            </SelectTrigger>
+            <SelectContent>
               {meetingTypes.map((type) => (
-                <MenuItem key={type} value={type}>
+                <SelectItem key={type} value={type}>
                   {type}
-                </MenuItem>
+                </SelectItem>
               ))}
-            </Select>
-          </FormControl>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

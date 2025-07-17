@@ -141,20 +141,78 @@ export function AdminPage() {
         enableSorting={true}
         enablePagination={true}
         enableRowSelection={false}
+        enableTopToolbar={false}
         muiTableProps={{
           sx: {
             tableLayout: 'fixed',
+            fontFamily: 'inherit',
+            '& .MuiTableCell-root': {
+              fontFamily: 'inherit',
+              fontSize: '0.875rem',
+              lineHeight: '1.25rem',
+              padding: '12px 16px',
+              borderBottom: '1px solid #e5e7eb',
+            },
           },
         }}
         muiTableHeadCellProps={{
           sx: {
             backgroundColor: '#f8fafc',
             fontWeight: '600',
+            fontSize: '0.875rem',
+            fontFamily: 'inherit',
+            color: '#374151',
+            borderBottom: '2px solid #e5e7eb',
+            '& .MuiTableSortLabel-root': {
+              fontFamily: 'inherit',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+            },
           },
         }}
         muiTableBodyCellProps={{
           sx: {
-            borderBottom: '1px solid #e2e8f0',
+            fontFamily: 'inherit',
+            fontSize: '0.875rem',
+            lineHeight: '1.25rem',
+            color: '#374151',
+            borderBottom: '1px solid #f3f4f6',
+            '&:hover': {
+              backgroundColor: '#f9fafb',
+            },
+          },
+        }}
+        muiTableBodyRowProps={{
+          sx: {
+            '&:hover': {
+              backgroundColor: '#f9fafb',
+            },
+            '&:nth-of-type(even)': {
+              backgroundColor: '#fafafa',
+            },
+          },
+        }}
+        muiPaginationProps={{
+          sx: {
+            fontFamily: 'inherit',
+            fontSize: '0.875rem',
+            '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+              fontFamily: 'inherit',
+              fontSize: '0.875rem',
+              color: '#6b7280',
+            },
+            '& .MuiTablePagination-select': {
+              fontFamily: 'inherit',
+              fontSize: '0.875rem',
+            },
+          },
+        }}
+        muiTablePaperProps={{
+          sx: {
+            boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+            border: '1px solid #e5e7eb',
+            borderRadius: '0.5rem',
+            overflow: 'hidden',
           },
         }}
         initialState={{
