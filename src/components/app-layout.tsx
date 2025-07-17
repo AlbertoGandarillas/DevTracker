@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { UserButton } from "@clerk/nextjs"
@@ -26,7 +26,18 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   const { isAdmin, loading } = useUser()
+
+  // Handle scroll effect for header transparency
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Show loading state for navigation while checking admin
   if (loading) {
@@ -40,32 +51,43 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className={cn(
+        "sticky top-0 z-50 w-full transition-all duration-300",
+        isScrolled 
+          ? "bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm" 
+          : "bg-white border-b border-gray-100"
+      )}>
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2">
-              <Activity className="h-6 w-6" />
-              <span className="font-bold text-xl">DevTracker</span>
+              <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-md flex items-center justify-center">
+                <Activity className="h-4 w-4 text-white" />
+              </div>
+              <span className="font-bold text-xl text-gray-900">DevTracker</span>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-2">
               {navigation.map((item) => {
                 if (item.adminOnly && !isAdmin) return null
 
+                const isActive = pathname === item.href
+                
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary",
-                      pathname === item.href ? "text-primary" : "text-muted-foreground",
+                      "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200",
+                      isActive 
+                        ? "bg-gray-100 text-gray-900" 
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     )}
                   >
                     <item.icon className="h-4 w-4" />
                     {item.name}
                     {item.adminOnly && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs ml-1">
                         Admin
                       </Badge>
                     )}
@@ -80,40 +102,46 @@ export function AppLayout({ children }: AppLayoutProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
 
             {/* Clerk UserButton */}
-            <UserButton />
+            <UserButton appearance={{
+              elements: {
+                avatarBox: "w-8 h-8"
+              }
+            }} />
           </div>
         </div>
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t">
+          <div className="md:hidden border-t border-gray-100 bg-white">
             <nav className="container py-4 space-y-2">
               {navigation.map((item) => {
                 if (item.adminOnly && !isAdmin) return null
+
+                const isActive = pathname === item.href
 
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-6 text-sm font-medium rounded-md transition-colors",
-                      pathname === item.href
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-primary hover:bg-muted",
+                      "flex items-center gap-2 px-3 py-3 text-sm font-medium rounded-md transition-all duration-200",
+                      isActive
+                        ? "bg-gray-100 text-gray-900"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <item.icon className="h-4 w-4" />
                     {item.name}
                     {item.adminOnly && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs ml-1">
                         Admin
                       </Badge>
                     )}

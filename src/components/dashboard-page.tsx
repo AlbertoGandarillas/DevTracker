@@ -58,28 +58,37 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.firstName || user?.username}</h1>
-          <p className="text-muted-foreground mt-1">{today}</p>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4" />
-          <span>Week of {currentWeek}</span>
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold tracking-tight text-indigo-900">
+              Welcome back, {user?.firstName || user?.username}
+            </h1>
+            <p className="text-indigo-700 mt-1 font-medium">{today}</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-indigo-600">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="font-medium">Week of {currentWeek}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Activity Form */}
-      <ActivityForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+      {/* Two Column Layout */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Activity Form */}
+        <ActivityForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
 
-      {/* Recent Submissions */}
-      <ActivityList
-        activities={activities}
-        loading={loadingActivities}
-        error={activitiesError}
-        title="Recent Submissions"
-        emptyMessage="No recent submissions found"
-      />
+        {/* Recent Submissions */}
+        <ActivityList
+          activities={activities}
+          loading={loadingActivities}
+          error={activitiesError}
+          title="Recent Submissions"
+          emptyMessage="No recent submissions found"
+        />
+      </div>
     </div>
   )
 }
