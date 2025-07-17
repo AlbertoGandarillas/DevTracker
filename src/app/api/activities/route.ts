@@ -81,6 +81,8 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
     const all = searchParams.get('all') === 'true';
     const date = searchParams.get('date');
 
+    console.log('API - Received parameters:', { days, limit, all, date });
+
     // Validate parameters
     if (days < 1 || days > 365) {
       return createErrorResponse('Days parameter must be between 1 and 365');
@@ -92,25 +94,48 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
     const isAdmin = user.dbUser.role === 'admin';
 
     // Calculate the date range
-    let startDate: Date, endDate: Date;
+    let startDate: Date | undefined, endDate: Date | undefined;
     if (date) {
-      startDate = new Date(date);
-      startDate.setHours(0, 0, 0, 0);
-      endDate = new Date(date);
-      endDate.setHours(23, 59, 59, 999);
+      // Parse the date string (expected format: yyyy-MM-dd)
+      const [year, month, day] = date.split('-').map(Number);
+      if (isNaN(year) || isNaN(month) || isNaN(day)) {
+        return createErrorResponse('Invalid date parameter format. Expected yyyy-MM-dd');
+      }
+      
+      // For specific date queries, we don't need startDate/endDate
+      // We'll use exact date matching instead
     } else {
       endDate = new Date();
       startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
+      console.log('API - Default date range:', { 
+        startDate: startDate.toISOString(), 
+        endDate: endDate.toISOString() 
+      });
     }
 
     // Build query
-    const where: any = {
-      date: {
-        gte: startDate,
-        lte: endDate,
-      },
-    };
+    const where: any = {};
+    if (date) {
+      // For specific date queries, use exact date match since the field is @db.Date
+      const [year, month, day] = date.split('-').map(Number);
+      // Create date in UTC to match database storage
+      const targetDate = new Date(Date.UTC(year, month - 1, day));
+      where.date = targetDate;
+      console.log('API - Exact date query:', { date, targetDate: targetDate.toISOString() });
+    } else {
+      // For date range queries, use gte/lte
+      if (startDate && endDate) {
+        where.date = {
+          gte: startDate,
+          lte: endDate,
+        };
+        console.log('API - Date range query:', { 
+          startDate: startDate.toISOString(), 
+          endDate: endDate.toISOString() 
+        });
+      }
+    }
     if (!(isAdmin && all)) {
       where.userId = user.dbUser.id;
     }
@@ -124,6 +149,12 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
       ],
       take: limit,
       include: { user: true },
+    });
+
+    console.log('API - Query results:', {
+      where,
+      activitiesCount: activities.length,
+      activities: activities.map(a => ({ id: a.id, date: a.date, meetingType: a.meetingType }))
     });
 
     return createSuccessResponse({

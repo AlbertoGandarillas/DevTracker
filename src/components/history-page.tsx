@@ -14,8 +14,13 @@ export function HistoryPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
   const { user, isAdmin } = useUser()
   
+  // Helper function to format date for API call
+  const formatDateForAPI = (date: Date) => {
+    return format(date, 'yyyy-MM-dd')
+  }
+  
   const { activities, loading, error } = useActivities({
-    date: selectedDate ? selectedDate.toISOString() : undefined,
+    date: selectedDate ? formatDateForAPI(selectedDate) : undefined,
     all: isAdmin
   })
 
