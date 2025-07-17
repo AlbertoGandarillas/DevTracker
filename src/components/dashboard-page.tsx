@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { format, startOfWeek } from "date-fns"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,31 +12,14 @@ import { AppLayout } from "@/components/app-layout"
 import { Clock, Calendar, User } from "lucide-react"
 import { useUser } from "@clerk/nextjs"
 
-// Mock data for recent submissions
-const mockRecentSubmissions = [
-  {
-    id: 1,
-    date: "2024-01-15",
-    meetingType: "Dev Meeting",
-    summary:
-      "Fixed issue with spCheckVariableUnitExhibit, courses with variable units now able to be created dynamically",
-    timestamp: "2:30 PM",
-  },
-  {
-    id: 2,
-    date: "2024-01-14",
-    meetingType: "EOD Update",
-    summary: "Working on card 1834 changes. Lisa already sent the script. After finishing 1834 I will jump to 1840",
-    timestamp: "5:45 PM",
-  },
-  {
-    id: 3,
-    date: "2024-01-13",
-    meetingType: "12pm Updates",
-    summary: "Updated front-end according Alex Mockup - Pending Pedro C. confirmation of DB changes",
-    timestamp: "12:15 PM",
-  },
-]
+// Activity interface
+interface Activity {
+  id: string;
+  date: string;
+  meetingType: string;
+  summary: string;
+  timestamp: string;
+}
 
 const meetingTypes = ["Dev Meeting", "EOD Update", "12pm Updates", "Stand-up", "Code Review", "Planning"]
 
@@ -45,7 +28,30 @@ export function DashboardPage() {
   const [meetingType, setMeetingType] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<{ meetingType?: string; activityDetails?: string }>({})
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(true);
+  const [activitiesError, setActivitiesError] = useState<string | null>(null);
   const { user } = useUser()
+
+  // Fetch activities for the current user
+  const fetchActivities = async () => {
+    setLoadingActivities(true);
+    setActivitiesError(null);
+    try {
+      const res = await fetch("/api/activities?days=7&limit=10");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to fetch activities");
+      setActivities(data.activities || []);
+    } catch (err: any) {
+      setActivitiesError(err.message || "Failed to fetch activities");
+    } finally {
+      setLoadingActivities(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchActivities();
+  }, []);
 
   const handleSubmit = async () => {
     // Clear previous errors
@@ -100,6 +106,7 @@ export function DashboardPage() {
       setUpdateText("")
       setMeetingType("")
       setErrors({})
+      await fetchActivities(); // Refresh activities after submit
     } catch (error) {
       console.error('Error submitting activity:', error)
       toast.error("Failed to submit update", {
@@ -202,22 +209,28 @@ export function DashboardPage() {
             <CardDescription>Your activity logs from the past 7 days</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {mockRecentSubmissions.map((submission) => (
-                <div key={submission.id} className="border rounded-lg p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">{submission.meetingType}</Badge>
-                      <span className="text-sm text-muted-foreground">
-                        {format(new Date(submission.date), "MMM d, yyyy")}
-                      </span>
+            {loadingActivities ? (
+              <p>Loading activities...</p>
+            ) : activitiesError ? (
+              <p className="text-red-500">{activitiesError}</p>
+            ) : (
+              <div className="space-y-4">
+                {activities.map((activity) => (
+                  <div key={activity.id} className="border rounded-lg p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">{activity.meetingType}</Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(activity.date), "MMM d, yyyy")}
+                        </span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">{activity.timestamp}</span>
                     </div>
-                    <span className="text-sm text-muted-foreground">{submission.timestamp}</span>
+                    <p className="text-sm leading-relaxed">{activity.summary}</p>
                   </div>
-                  <p className="text-sm leading-relaxed">{submission.summary}</p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
