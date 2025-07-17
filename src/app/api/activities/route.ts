@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, createErrorResponse, createSuccessResponse, AuthenticatedUser } from '@/lib/api';
+import { API_CONFIG } from '@/lib/constants';
 
 export const POST = requireAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
@@ -76,19 +77,17 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
   try {
     // Get query parameters
     const { searchParams } = new URL(request.url);
-    const days = searchParams.get('days') ? parseInt(searchParams.get('days')!) : 7;
-    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 10;
+    const days = searchParams.get('days') ? parseInt(searchParams.get('days')!) : API_CONFIG.DEFAULT_DAYS;
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : API_CONFIG.DEFAULT_LIMIT;
     const all = searchParams.get('all') === 'true';
     const date = searchParams.get('date');
 
-    console.log('API - Received parameters:', { days, limit, all, date });
-
     // Validate parameters
-    if (days < 1 || days > 365) {
-      return createErrorResponse('Days parameter must be between 1 and 365');
+    if (days < API_CONFIG.MIN_DAYS || days > API_CONFIG.MAX_DAYS) {
+      return createErrorResponse(`Days parameter must be between ${API_CONFIG.MIN_DAYS} and ${API_CONFIG.MAX_DAYS}`);
     }
-    if (limit < 1 || limit > 100) {
-      return createErrorResponse('Limit parameter must be between 1 and 100');
+    if (limit < API_CONFIG.MIN_LIMIT || limit > API_CONFIG.MAX_LIMIT) {
+      return createErrorResponse(`Limit parameter must be between ${API_CONFIG.MIN_LIMIT} and ${API_CONFIG.MAX_LIMIT}`);
     }
 
     const isAdmin = user.dbUser.role === 'admin';
@@ -108,10 +107,6 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
       endDate = new Date();
       startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
-      console.log('API - Default date range:', { 
-        startDate: startDate.toISOString(), 
-        endDate: endDate.toISOString() 
-      });
     }
 
     // Build query
@@ -122,7 +117,6 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
       // Create date in UTC to match database storage
       const targetDate = new Date(Date.UTC(year, month - 1, day));
       where.date = targetDate;
-      console.log('API - Exact date query:', { date, targetDate: targetDate.toISOString() });
     } else {
       // For date range queries, use gte/lte
       if (startDate && endDate) {
@@ -130,10 +124,6 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
           gte: startDate,
           lte: endDate,
         };
-        console.log('API - Date range query:', { 
-          startDate: startDate.toISOString(), 
-          endDate: endDate.toISOString() 
-        });
       }
     }
     if (!(isAdmin && all)) {
@@ -149,12 +139,6 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
       ],
       take: limit,
       include: { user: true },
-    });
-
-    console.log('API - Query results:', {
-      where,
-      activitiesCount: activities.length,
-      activities: activities.map(a => ({ id: a.id, date: a.date, meetingType: a.meetingType }))
     });
 
     return createSuccessResponse({

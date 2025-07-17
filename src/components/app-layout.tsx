@@ -12,12 +12,14 @@ import { Activity, Calendar, Settings, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUser } from "@/hooks/useUser"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { NAVIGATION, UI_CONFIG } from "@/lib/constants"
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: Activity },
-  { name: "History", href: "/history", icon: Calendar },
-  { name: "Admin", href: "/admin", icon: Settings, adminOnly: true },
-]
+// Icon mapping for navigation
+const iconMap = {
+  Activity,
+  Calendar,
+  Settings,
+}
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -32,7 +34,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   // Handle scroll effect for header transparency
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0)
+      setIsScrolled(window.scrollY > UI_CONFIG.SCROLL_THRESHOLD)
     }
 
     window.addEventListener('scroll', handleScroll)
@@ -68,10 +70,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-2">
-              {navigation.map((item) => {
-                if (item.adminOnly && !isAdmin) return null
+              {NAVIGATION.map((item) => {
+                if ('adminOnly' in item && item.adminOnly && !isAdmin) return null
 
                 const isActive = pathname === item.href
+                const IconComponent = iconMap[item.icon as keyof typeof iconMap]
                 
                 return (
                   <Link
@@ -84,7 +87,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <IconComponent className="h-4 w-4" />
                     {item.name}
                   </Link>
                 )
@@ -116,10 +119,11 @@ export function AppLayout({ children }: AppLayoutProps) {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-100 bg-white">
             <nav className="container py-4 space-y-2">
-              {navigation.map((item) => {
-                if (item.adminOnly && !isAdmin) return null
+              {NAVIGATION.map((item) => {
+                if ('adminOnly' in item && item.adminOnly && !isAdmin) return null
 
                 const isActive = pathname === item.href
+                const IconComponent = iconMap[item.icon as keyof typeof iconMap]
 
                 return (
                   <Link
@@ -133,9 +137,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <IconComponent className="h-4 w-4" />
                     {item.name}
-                    {item.adminOnly && (
+                    {'adminOnly' in item && item.adminOnly && (
                       <Badge variant="secondary" className="text-xs ml-1">
                         Admin
                       </Badge>
