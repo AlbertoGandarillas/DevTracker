@@ -96,12 +96,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const days = searchParams.get('days') ? parseInt(searchParams.get('days')!) : 7;
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 10;
+    const all = searchParams.get('all') === 'true';
+    const date = searchParams.get('date'); // for single day queries
 
     // Validate parameters
     if (days < 1 || days > 365) {
       return NextResponse.json({ error: 'Days parameter must be between 1 and 365' }, { status: 400 });
     }
-
     if (limit < 1 || limit > 100) {
       return NextResponse.json({ error: 'Limit parameter must be between 1 and 100' }, { status: 400 });
     }
@@ -113,54 +114,57 @@ export async function GET(request: NextRequest) {
         'Content-Type': 'application/json',
       },
     });
-
     if (!response.ok) {
       return NextResponse.json({ error: 'Failed to fetch user data' }, { status: 500 });
     }
-
     const userData = await response.json();
     const email = userData.email_addresses?.[0]?.email_address;
-
     if (!email) {
       return NextResponse.json({ error: 'No email found' }, { status: 400 });
     }
-
     // Find the user in our database
     const dbUser = await prisma.devTracker_User.findUnique({
       where: { email: email.toLowerCase() }
     });
-
     if (!dbUser) {
       return NextResponse.json({ error: 'User not found in database' }, { status: 404 });
     }
+    const isAdmin = dbUser.role === 'admin';
 
     // Calculate the date range
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    let startDate: Date, endDate: Date;
+    if (date) {
+      // If a specific date is provided, use that day
+      startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(date);
+      endDate.setHours(23, 59, 59, 999);
+    } else {
+      endDate = new Date();
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+    }
 
-    // Fetch activities for the user within the date range
-    const activities = await prisma.devTracker_Activity.findMany({
-      where: {
-        userId: dbUser.id,
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
+    // Build query
+    const where: any = {
+      date: {
+        gte: startDate,
+        lte: endDate,
       },
+    };
+    if (!(isAdmin && all)) {
+      where.userId = dbUser.id;
+    }
+
+    // Fetch activities (always include user relation for admin/userName)
+    const activities = await prisma.devTracker_Activity.findMany({
+      where,
       orderBy: [
         { date: 'desc' },
         { createdAt: 'desc' },
       ],
       take: limit,
-      select: {
-        id: true,
-        date: true,
-        meetingType: true,
-        note: true,
-        progress: true,
-        createdAt: true,
-      },
+      include: { user: true },
     });
 
     return NextResponse.json({ 
@@ -171,6 +175,7 @@ export async function GET(request: NextRequest) {
         meetingType: activity.meetingType,
         summary: activity.note || activity.progress || '',
         timestamp: activity.createdAt,
+        userName: isAdmin && all ? activity.user?.name : undefined,
       }))
     });
 

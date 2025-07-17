@@ -11,15 +11,7 @@ import { toast } from "sonner"
 import { AppLayout } from "@/components/app-layout"
 import { Clock, Calendar, User } from "lucide-react"
 import { useUser } from "@clerk/nextjs"
-
-// Activity interface
-interface Activity {
-  id: string;
-  date: string;
-  meetingType: string;
-  summary: string;
-  timestamp: string;
-}
+import { ActivityCard, Activity } from "@/components/activity-card"
 
 const meetingTypes = ["Dev Meeting", "EOD Update", "12pm Updates", "Stand-up", "Code Review", "Planning"]
 
@@ -216,18 +208,7 @@ export function DashboardPage() {
             ) : (
               <div className="space-y-4">
                 {activities.map((activity) => (
-                  <div key={activity.id} className="border rounded-lg p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">{activity.meetingType}</Badge>
-                        <span className="text-sm text-muted-foreground">
-                          {format(new Date(activity.date), "MMM d, yyyy")}
-                        </span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">{activity.timestamp}</span>
-                    </div>
-                    <p className="text-sm leading-relaxed">{activity.summary}</p>
-                  </div>
+                  <ActivityCard key={activity.id} activity={activity} />
                 ))}
               </div>
             )}
