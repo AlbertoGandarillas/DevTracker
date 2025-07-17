@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, Download, Filter, Users, Activity, Calendar, AlertCircle } from "lucide-react"
+import { Search, Download, Filter, Users, Activity, Calendar, AlertCircle, FileSpreadsheet } from "lucide-react"
 import { MaterialReactTable } from "material-react-table"
 import { Box, MenuItem, Select, FormControl, InputLabel, Alert } from "@mui/material"
+import * as XLSX from 'xlsx'
 import { StatsCard } from "@/components/ui/stats-card"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { ErrorMessage } from "@/components/ui/error-message"
@@ -46,9 +47,42 @@ export function AdminPage() {
     return filtered
   }, [activities, searchTerm, selectedDeveloper, selectedMeetingType])
 
-  const handleExportCSV = () => {
-    // Export CSV functionality (can be implemented with Material React Table's built-in export)
-    console.log("Exporting CSV...")
+  const handleExportExcel = () => {
+    // Create workbook and worksheet
+    const workbook = XLSX.utils.book_new()
+    
+    // Prepare data for export
+    const exportData = filteredActivities.map(activity => ({
+      Developer: activity.developer,
+      Date: format(new Date(activity.date), "MMM d, yyyy"),
+      'Meeting Type': activity.meetingType,
+      Summary: activity.summary,
+      Tickets: activity.tickets.join(', '),
+      Submitted: format(new Date(activity.submittedAt), "MMM d, yyyy h:mm a")
+    }))
+    
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    
+    // Set column widths
+    const columnWidths = [
+      { wch: 15 }, // Developer
+      { wch: 12 }, // Date
+      { wch: 15 }, // Meeting Type
+      { wch: 50 }, // Summary
+      { wch: 20 }, // Tickets
+      { wch: 20 }  // Submitted
+    ]
+    worksheet['!cols'] = columnWidths
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Team Activities')
+    
+    // Generate filename with current date
+    const fileName = `team-activities-${format(new Date(), "yyyy-MM-dd")}.xlsx`
+    
+    // Save file
+    XLSX.writeFile(workbook, fileName)
   }
 
   // Material React Table columns
@@ -103,9 +137,9 @@ export function AdminPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        {/* Team Overview Banner */}
+        {/* Team Overview Banner with Stats */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="flex-1">
               <h1 className="text-3xl font-bold tracking-tight text-indigo-900">
                 Team Overview
@@ -114,11 +148,36 @@ export function AdminPage() {
                 Monitor and manage team activity across all developers
               </p>
             </div>
+            
+            {/* Stats Cards - Hidden on mobile, shown on large screens */}
+            <div className="hidden lg:grid lg:grid-cols-3 gap-4">
+              <StatsCard
+                title="Total Activities"
+                value={0}
+                icon={Activity}
+                description="All time activities"
+                accentColor="text-purple-600"
+              />
+              <StatsCard
+                title="Active Developers"
+                value={0}
+                icon={Users}
+                description="Currently active"
+                accentColor="text-blue-600"
+              />
+              <StatsCard
+                title="This Week"
+                value={0}
+                icon={Calendar}
+                description="Activities this week"
+                accentColor="text-green-600"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Stats Cards - Mobile Only */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:hidden gap-4">
           <StatsCard
             title="Total Activities"
             value={0}
@@ -146,12 +205,12 @@ export function AdminPage() {
     )
   }
 
-  if (error) {
+    if (error) {
     return (
       <div className="space-y-6">
-        {/* Team Overview Banner */}
+        {/* Team Overview Banner with Stats */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="flex-1">
               <h1 className="text-3xl font-bold tracking-tight text-indigo-900">
                 Team Overview
@@ -160,11 +219,36 @@ export function AdminPage() {
                 Monitor and manage team activity across all developers
               </p>
             </div>
+            
+            {/* Stats Cards - Hidden on mobile, shown on large screens */}
+            <div className="hidden lg:grid lg:grid-cols-3 gap-4">
+              <StatsCard
+                title="Total Activities"
+                value={0}
+                icon={Activity}
+                description="All time activities"
+                accentColor="text-purple-600"
+              />
+              <StatsCard
+                title="Active Developers"
+                value={0}
+                icon={Users}
+                description="Currently active"
+                accentColor="text-blue-600"
+              />
+              <StatsCard
+                title="This Week"
+                value={0}
+                icon={Calendar}
+                description="Activities this week"
+                accentColor="text-green-600"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Stats Cards - Mobile Only */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:hidden gap-4">
           <StatsCard
             title="Total Activities"
             value={0}
@@ -178,7 +262,7 @@ export function AdminPage() {
             icon={Users}
             description="Currently active"
             accentColor="text-blue-600"
-            />
+          />
           <StatsCard
             title="This Week"
             value={0}
@@ -194,9 +278,9 @@ export function AdminPage() {
 
   return (
     <div className="space-y-6">
-      {/* Team Overview Banner */}
+      {/* Team Overview Banner with Stats */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex-1">
             <h1 className="text-3xl font-bold tracking-tight text-indigo-900">
               Team Overview
@@ -205,11 +289,36 @@ export function AdminPage() {
               Monitor and manage team activity across all developers
             </p>
           </div>
+          
+          {/* Stats Cards - Hidden on mobile, shown on large screens */}
+          <div className="hidden lg:grid lg:grid-cols-3 gap-4">
+            <StatsCard
+              title="Total Activities"
+              value={stats.totalActivities}
+              icon={Activity}
+              description="All time activities"
+              accentColor="text-purple-600"
+            />
+            <StatsCard
+              title="Active Developers"
+              value={stats.activeDevelopers}
+              icon={Users}
+              description="Currently active"
+              accentColor="text-blue-600"
+            />
+            <StatsCard
+              title="This Week"
+              value={stats.thisWeek}
+              icon={Calendar}
+              description="Activities this week"
+              accentColor="text-green-600"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Stats Cards - Mobile Only */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:hidden gap-4">
         <StatsCard
           title="Total Activities"
           value={stats.totalActivities}
@@ -263,10 +372,18 @@ export function AdminPage() {
                 label="Developer"
                 onChange={(e) => setSelectedDeveloper(e.target.value)}
                 disabled={loadingUsers}
+                sx={{
+                  fontSize: '0.875rem',
+                  fontFamily: 'inherit',
+                  '& .MuiSelect-select': {
+                    fontSize: '0.875rem',
+                    fontFamily: 'inherit',
+                  },
+                }}
               >
-                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="All" sx={{ fontSize: '0.875rem', fontFamily: 'inherit' }}>All</MenuItem>
                 {users.map((user) => (
-                  <MenuItem key={user.id} value={user.name}>{user.name}</MenuItem>
+                  <MenuItem key={user.id} value={user.name} sx={{ fontSize: '0.875rem', fontFamily: 'inherit' }}>{user.name}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -277,15 +394,23 @@ export function AdminPage() {
                 value={selectedMeetingType}
                 label="Meeting Type"
                 onChange={(e) => setSelectedMeetingType(e.target.value)}
+                sx={{
+                  fontSize: '0.875rem',
+                  fontFamily: 'inherit',
+                  '& .MuiSelect-select': {
+                    fontSize: '0.875rem',
+                    fontFamily: 'inherit',
+                  },
+                }}
               >
                 {meetingTypes.map((type) => (
-                  <MenuItem key={type} value={type}>{type}</MenuItem>
+                  <MenuItem key={type} value={type} sx={{ fontSize: '0.875rem', fontFamily: 'inherit' }}>{type}</MenuItem>
                 ))}
               </Select>
             </FormControl>
-            <Button onClick={handleExportCSV} variant="outline" className="flex items-center gap-2 bg-transparent">
-              <Download className="h-4 w-4" />
-              Export CSV
+            <Button onClick={handleExportExcel} variant="outline" className="flex items-center gap-2 bg-transparent">
+              <FileSpreadsheet className="h-4 w-4" />
+              Export Excel
             </Button>
           </div>
           {error && <Alert severity="error" sx={{ mt: 2 }} icon={<AlertCircle />}>{error}</Alert>}

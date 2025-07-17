@@ -59,9 +59,9 @@ export function CalendarView({
               onClick={() => onDateSelect(day)}
               className={cn(
                 "p-2 text-sm rounded-md transition-colors hover:bg-muted",
-                isToday(day) && "bg-primary text-primary-foreground hover:bg-primary/90",
-                selectedDate && isSameDay(day, selectedDate) && !isToday(day) && "bg-muted",
-                hasActivityOnDate(day) && !isToday(day) && "bg-blue-50 text-blue-700 hover:bg-blue-100",
+                selectedDate && isSameDay(day, selectedDate) && "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600",
+                isToday(day) && !selectedDate && "bg-primary text-primary-foreground hover:bg-primary/90",
+                hasActivityOnDate(day) && !selectedDate && !isToday(day) && "bg-blue-50 text-blue-700 hover:bg-blue-100",
               )}
             >
               {format(day, "d")}
