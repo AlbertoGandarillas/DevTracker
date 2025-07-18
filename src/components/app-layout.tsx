@@ -59,7 +59,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           ? "bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm" 
           : "bg-white border-b border-gray-100"
       )}>
-        <div className="container flex h-16 items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-md flex items-center justify-center">
@@ -118,7 +118,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-100 bg-white">
-            <nav className="container py-4 space-y-2">
+            <nav className="max-w-7xl mx-auto px-6 py-4 space-y-2">
               {NAVIGATION.map((item) => {
                 if ('adminOnly' in item && item.adminOnly && !isAdmin) return null
 
@@ -153,11 +153,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       </header>
 
       {/* Main Content - flex-1 makes it take remaining space */}
-      <main className="flex-1 container py-6">{children}</main>
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-6">{children}</main>
 
       {/* Footer - mt-auto pushes it to bottom on large screens, normal on mobile */}
       <footer className="border-t py-6 md:py-0 mt-auto">
-        <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
           <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
             <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
               © 2024 DevTracker. Built for efficient team activity tracking.
