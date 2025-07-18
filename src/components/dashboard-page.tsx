@@ -4,7 +4,7 @@ import { useState } from "react"
 import { format, startOfWeek } from "date-fns"
 import { toast } from "sonner"
 import { Calendar } from "lucide-react"
-import { useUser } from "@clerk/nextjs"
+import { useSession } from "next-auth/react"
 import { ActivityForm } from "@/components/activity-form"
 import { ActivityList } from "@/components/activity-list"
 import { useActivities } from "@/hooks/useActivities"
@@ -12,7 +12,7 @@ import { ActivityFormData } from "@/types"
 
 export function DashboardPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { user } = useUser()
+  const { data: session } = useSession()
   const { activities, loading: loadingActivities, error: activitiesError, refetch } = useActivities({ days: 7, limit: 10 })
 
   const handleSubmit = async (formData: ActivityFormData) => {
@@ -69,7 +69,7 @@ export function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-3xl font-bold tracking-tight text-indigo-900">
-              Welcome back, {user?.firstName || user?.username}
+              Welcome back, {session?.user?.name || session?.user?.email}
             </h1>
             <p className="text-indigo-700 mt-1 font-medium">{today}</p>
           </div>

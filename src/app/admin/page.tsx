@@ -1,20 +1,17 @@
-import { currentUser } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
-import { getUserByEmail } from '@/lib/auth';
+import { authOptions, hasValidSession } from '@/lib/auth';
 import { AdminPage } from '@/components/admin-page';
 
 export default async function Admin() {
-  const user = await currentUser();
+  const session = await getServerSession(authOptions);
   
-  if (!user) {
+  if (!hasValidSession(session)) {
     redirect('/sign-in');
   }
 
-  const email = user.emailAddresses[0]?.emailAddress;
-  const dbUser = email ? await getUserByEmail(email) : null;
-
-  // Check if user exists and has admin role
-  if (!dbUser || dbUser.role !== 'admin') {
+  // Check if user has admin role
+  if (session.user.role !== 'admin') {
     redirect('/');
   }
 

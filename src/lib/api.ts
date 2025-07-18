@@ -1,59 +1,27 @@
-import { auth } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth/next';
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from './prisma';
-import { User } from '@/types';
+import { authOptions, hasValidSession } from './auth';
 
 export interface AuthenticatedUser {
-  clerkUserId: string;
+  id: string;
   email: string;
-  dbUser: User;
+  name?: string | null;
+  role: string;
 }
 
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
   try {
-    const { userId } = await auth();
+    const session = await getServerSession(authOptions);
     
-    if (!userId) {
-      return null;
-    }
-
-    // Get user data from Clerk
-    const response = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const userData = await response.json();
-    const email = userData.email_addresses?.[0]?.email_address;
-
-    if (!email) {
-      return null;
-    }
-
-    // Find the user in our database
-    const dbUser = await prisma.devTracker_User.findUnique({
-      where: { email: email.toLowerCase() }
-    });
-
-    if (!dbUser) {
+    if (!hasValidSession(session)) {
       return null;
     }
 
     return {
-      clerkUserId: userId,
-      email: email.toLowerCase(),
-      dbUser: {
-        id: dbUser.id,
-        name: dbUser.name || 'Unknown',
-        email: dbUser.email,
-        role: dbUser.role as 'admin' | 'user'
-      }
+      id: session.user.id,
+      email: session.user.email || '',
+      name: session.user.name,
+      role: session.user.role
     };
   } catch (error) {
     console.error('Error getting authenticated user:', error);
@@ -89,7 +57,7 @@ export function requireAdmin(handler: (req: NextRequest, user: AuthenticatedUser
       return createErrorResponse('Unauthorized', 401);
     }
 
-    if (user.dbUser.role !== 'admin') {
+    if (user.role !== 'admin') {
       return createErrorResponse('Access denied. Admin privileges required.', 403);
     }
 

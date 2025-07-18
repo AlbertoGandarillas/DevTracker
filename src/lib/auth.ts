@@ -1,27 +1,94 @@
-import { prisma } from './prisma';
+import { NextAuthOptions } from "next-auth"
+import GoogleProvider from "next-auth/providers/google"
+import { prisma } from "./prisma"
 
-export async function getUserByEmail(email: string) {
-  return await prisma.devTracker_User.findUnique({
-    where: { email: email.toLowerCase() }
-  });
+// Type guard to ensure session has user
+export function hasValidSession(session: unknown): session is { user: { id: string; role: string; name?: string | null; email?: string | null } } {
+  return session !== null && 
+         typeof session === 'object' && 
+         session !== null && 
+         'user' in session && 
+         session.user !== null && 
+         typeof session.user === 'object' && 
+         'id' in session.user && 
+         'role' in session.user;
 }
 
-export async function isUserAuthorized(email: string): Promise<boolean> {
-  const user = await getUserByEmail(email);
-  return user !== null;
-}
-
-export async function updateUserInfo(email: string, name?: string) {
-  const existingUser = await getUserByEmail(email);
-  
-  if (!existingUser) {
-    throw new Error('User not found in database');
-  }
-
-  return await prisma.devTracker_User.update({
-    where: { email: email.toLowerCase() },
-    data: {
-      name: name || existingUser.name,
+export const authOptions: NextAuthOptions = {
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+  ],
+  debug: true, // Enable debug mode
+  callbacks: {
+    async signIn({ user, account }) {
+      console.log("signIn callback triggered:", { user: user.email, provider: account?.provider });
+      
+      if (account?.provider === "google") {
+        try {
+          // Check if user exists in DevTracker_Users table
+          const existingUser = await prisma.devTracker_User.findUnique({
+            where: { email: user.email?.toLowerCase() }
+          })
+          
+          console.log("Database user lookup result:", existingUser ? "User found" : "User not found");
+          
+          if (existingUser) {
+            // Update user info if needed
+            await prisma.devTracker_User.update({
+              where: { email: user.email?.toLowerCase() },
+              data: {
+                name: user.name || existingUser.name,
+              }
+            })
+            console.log("User authorized successfully");
+            return true
+          } else {
+            // User not found in DevTracker_Users table
+            console.log("User not found in DevTracker_Users table - access denied");
+            return false
+          }
+        } catch (error) {
+          console.error("Error checking user authorization:", error)
+          return false
+        }
+      }
+      console.log("Non-Google provider or no account - access denied");
+      return false
     },
-  });
+    async jwt({ token, user }) {
+      if (user) {
+        // Get user data from DevTracker_Users table
+        const dbUser = await prisma.devTracker_User.findUnique({
+          where: { email: user.email?.toLowerCase() }
+        })
+        
+        if (dbUser) {
+          token.id = dbUser.id
+          token.role = dbUser.role
+          token.name = dbUser.name
+        }
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id as string
+        session.user.role = token.role as string
+        session.user.name = token.name as string
+      }
+      return session
+    },
+  },
+  pages: {
+    signIn: '/sign-in',
+    error: '/sign-in', // Redirect to sign-in page on error
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  secret: process.env.NEXTAUTH_SECRET,
 } 

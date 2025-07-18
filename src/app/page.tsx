@@ -1,13 +1,7 @@
-import { redirect } from 'next/navigation';
-import { currentUser } from '@clerk/nextjs/server';
-
-export default async function HomePage() {
-  const user = await currentUser();
-  
-  if (!user) {
-    redirect('/sign-in');
-  }
-
-  // If user is authenticated, redirect to dashboard
-  redirect('/dashboard');
+export default function HomePage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#6c47ff]"></div>
+    </div>
+  );
 }

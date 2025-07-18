@@ -1,14 +1,9 @@
 import { type Metadata } from 'next'
-import {
-  ClerkProvider,
-  SignedIn,
-  SignedOut,
-} from '@clerk/nextjs'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
-import AuthGuard from '@/components/AuthGuard'
 import { Toaster } from '@/components/ui/sonner'
-import { AppLayout } from '@/components/app-layout'
+import { Providers } from '@/components/providers'
+import { SignInLayout } from '@/components/SignInLayout'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,26 +26,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <SignedIn>
-            <AuthGuard>
-              <AppLayout>
-                {children}
-              </AppLayout>
-            </AuthGuard>
-          </SignedIn>
-          <SignedOut>
-            <div className="min-h-screen bg-background">
-              <main className="">
-                {children}
-              </main>
-            </div>
-          </SignedOut>
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Providers>
+          <SignInLayout>
+            {children}
+          </SignInLayout>
           <Toaster />
-        </body>
-      </html>
-    </ClerkProvider>
+        </Providers>
+      </body>
+    </html>
   )
 }

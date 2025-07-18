@@ -5,10 +5,10 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
   try {
     return createSuccessResponse({
       user: {
-        id: user.dbUser.id,
-        email: user.dbUser.email,
-        name: user.dbUser.name,
-        role: user.dbUser.role
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
       }
     });
   } catch (error) {

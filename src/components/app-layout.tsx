@@ -5,11 +5,11 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { UserButton } from "@clerk/nextjs"
+import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Logo } from "@/components/ui/logo"
-import { Activity, Calendar, Settings, Menu, X } from "lucide-react"
+import { Activity, Calendar, Settings, Menu, X, User, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUser } from "@/hooks/useUser"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
@@ -30,7 +30,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const { isAdmin, loading } = useUser()
+  const { data: session } = useSession()
 
   // Handle scroll effect for header transparency
   useEffect(() => {
@@ -41,6 +43,19 @@ export function AppLayout({ children }: AppLayoutProps) {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Handle click outside to close user menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element
+      if (userMenuOpen && !target.closest('.user-menu')) {
+        setUserMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [userMenuOpen])
 
   // Show loading state for navigation while checking admin
   if (loading) {
@@ -102,12 +117,39 @@ export function AppLayout({ children }: AppLayoutProps) {
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
 
-            {/* Clerk UserButton */}
-            <UserButton appearance={{
-              elements: {
-                avatarBox: "w-8 h-8"
-              }
-            }} />
+            {/* Custom User Button */}
+            <div className="relative user-menu">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-2 h-8 px-2"
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+              >
+                <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <User className="h-3 w-3 text-white" />
+                </div>
+                <span className="hidden sm:block text-sm font-medium">
+                  {session?.user?.name || session?.user?.email}
+                </span>
+              </Button>
+
+              {/* User Dropdown Menu */}
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50 min-w-0">
+                  <div className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                    <p className="font-medium truncate">{session?.user?.name}</p>
+                    <p className="text-gray-500 truncate text-xs">{session?.user?.email}</p>
+                  </div>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/sign-in' })}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4 flex-shrink-0" />
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

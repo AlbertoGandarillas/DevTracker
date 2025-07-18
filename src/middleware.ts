@@ -1,12 +1,23 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { withAuth } from "next-auth/middleware"
 
-export default clerkMiddleware();
+export default withAuth(
+  function middleware() {
+    // Add any custom middleware logic here if needed
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token
+    },
+  }
+)
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
-  ],
-};
+    // Protected routes that require authentication
+    '/dashboard/:path*',
+    '/history/:path*',
+    '/admin/:path*',
+    '/api/activities/:path*',
+    '/api/admin/:path*',
+  ]
+}

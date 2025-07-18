@@ -48,7 +48,7 @@ export const POST = requireAuth(async (request: NextRequest, user: Authenticated
     // Create the activity
     const activity = await prisma.devTracker_Activity.create({
       data: {
-        userId: user.dbUser.id,
+        userId: user.id,
         date: activityDate,
         meetingType: meetingType.trim(),
         note: activityDetails.trim(),
@@ -90,7 +90,7 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
       return createErrorResponse(`Limit parameter must be between ${API_CONFIG.MIN_LIMIT} and ${API_CONFIG.MAX_LIMIT}`);
     }
 
-    const isAdmin = user.dbUser.role === 'admin';
+    const isAdmin = user.role === 'admin';
 
     // Calculate the date range
     let startDate: Date | undefined, endDate: Date | undefined;
@@ -127,7 +127,7 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
       }
     }
     if (!(isAdmin && all)) {
-      where.userId = user.dbUser.id;
+      where.userId = user.id;
     }
 
     // Fetch activities
@@ -189,7 +189,7 @@ export const PUT = requireAuth(async (request: NextRequest, user: AuthenticatedU
     }
 
     // Only allow users to edit their own activities, or admins to edit any
-    if (existingActivity.userId !== user.dbUser.id && user.dbUser.role !== 'admin') {
+    if (existingActivity.userId !== user.id && user.role !== 'admin') {
       return createErrorResponse('Access denied', 403);
     }
 
@@ -241,7 +241,7 @@ export const DELETE = requireAuth(async (request: NextRequest, user: Authenticat
     }
 
     // Only allow users to delete their own activities, or admins to delete any
-    if (existingActivity.userId !== user.dbUser.id && user.dbUser.role !== 'admin') {
+    if (existingActivity.userId !== user.id && user.role !== 'admin') {
       return createErrorResponse('Access denied', 403);
     }
 

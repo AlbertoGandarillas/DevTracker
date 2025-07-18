@@ -1,87 +1,61 @@
-import { useState, useEffect } from 'react';
-import { User, ApiResponse } from '@/types';
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 
 interface UseUserReturn {
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-  isAdmin: boolean;
-  refetch: () => Promise<void>;
+  isAdmin: boolean
+  loading: boolean
+  user: {
+    id: string
+    name?: string | null
+    email?: string | null
+    role: string
+  } | null
 }
 
 export function useUser(): UseUserReturn {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchUser = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const res = await fetch('/api/user/me');
-      const data: ApiResponse = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to fetch user');
-      }
-      
-      setUser(data.user || null);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: session, status } = useSession()
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    fetchUser();
-  }, []);
+    if (session?.user) {
+      setIsAdmin(session.user.role === 'admin')
+    } else {
+      setIsAdmin(false)
+    }
+  }, [session])
 
   return {
-    user,
-    loading,
-    error,
-    isAdmin: user?.role === 'admin',
-    refetch: fetchUser
-  };
+    isAdmin,
+    loading: status === 'loading',
+    user: session?.user || null
+  }
 }
 
+// Keep the existing useUsers function for admin functionality
 export function useUsers() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchUsers = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const res = await fetch('/api/admin/users');
-      const data: ApiResponse = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to fetch users');
-      }
-      
-      setUsers(data.users || []);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/admin/users')
+        if (response.ok) {
+          const data = await response.json()
+          setUsers(data.users || [])
+        } else {
+          setError('Failed to fetch users')
+        }
+      } catch {
+        setError('Error fetching users')
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  return {
-    users,
-    loading,
-    error,
-    refetch: fetchUsers
-  };
+    fetchUsers()
+  }, [])
+
+  return { users, loading, error }
 } 

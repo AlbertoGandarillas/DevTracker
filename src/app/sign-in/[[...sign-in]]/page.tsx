@@ -1,4 +1,4 @@
-import { SignIn } from "@clerk/nextjs";
+import { SignIn } from "@/components/ui/sign-in";
 import {
   Card,
   CardContent,
@@ -11,6 +11,7 @@ import {
   Zap,
   CheckCircle,
 } from "lucide-react";
+
 
 export default function SignInPage() {
   return (
@@ -99,14 +100,7 @@ export default function SignInPage() {
 
             <CardContent className="space-y-6">
               {/* Sign In Section */}
-              <SignIn
-                appearance={{
-                  elements: {
-                    formButtonPrimary: "bg-[#6c47ff] hover:bg-[#5a3fd8]",
-                    card: "shadow-lg",
-                  },
-                }}
-              />
+              <SignIn />
             </CardContent>
           </Card>
         </div>
