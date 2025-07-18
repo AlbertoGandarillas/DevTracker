@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { MessageSquare, Check } from "lucide-react"
@@ -123,17 +123,16 @@ export function ActivityForm({ onSubmit, isSubmitting = false, initialData }: Ac
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-900">Activity Details *</label>
           <div className="relative">
-            <Textarea
-              placeholder="Enter today's progress, tickets worked on, issues, or expected completions..."
+            <RichTextEditor
               value={formData.activityDetails}
-              onChange={(e) => updateField('activityDetails', e.target.value)}
+              onChange={(value) => updateField('activityDetails', value)}
+              placeholder="Enter today's progress, tickets worked on, issues, or expected completions..."
               className={cn(
-                "min-h-[120px] resize-none border-gray-300 focus:border-blue-500 focus:ring-blue-500",
                 errors.activityDetails ? "border-red-500" : ""
               )}
               maxLength={500}
             />
-            <div className="absolute bottom-2 right-2 text-xs text-gray-400">
+            <div className="absolute bottom-2 right-2 text-xs text-gray-400 z-10">
               {charCount}/500 characters
             </div>
           </div>
