@@ -15,15 +15,16 @@ const meetingTypes = ["Dev Meeting", "EOD Update", "12pm Updates", "Stand-up", "
 interface ActivityFormProps {
   onSubmit: (data: ActivityFormData) => Promise<void>
   isSubmitting?: boolean
+  initialData?: ActivityFormData
 }
 
-export function ActivityForm({ onSubmit, isSubmitting = false }: ActivityFormProps) {
+export function ActivityForm({ onSubmit, isSubmitting = false, initialData }: ActivityFormProps) {
   const [formData, setFormData] = useState<ActivityFormData>({
-    meetingType: "",
-    activityDetails: ""
+    meetingType: initialData?.meetingType || "",
+    activityDetails: initialData?.activityDetails || ""
   })
   const [errors, setErrors] = useState<ValidationErrors>({})
-  const [charCount, setCharCount] = useState(0)
+  const [charCount, setCharCount] = useState(initialData?.activityDetails?.length || 0)
 
   const handleSubmit = async () => {
     // Clear previous errors
@@ -53,8 +54,11 @@ export function ActivityForm({ onSubmit, isSubmitting = false }: ActivityFormPro
 
     try {
       await onSubmit(formData)
-      // Reset form on success
-      setFormData({ meetingType: "", activityDetails: "" })
+      // Reset form on success (only if not editing)
+      if (!initialData) {
+        setFormData({ meetingType: "", activityDetails: "" })
+        setCharCount(0)
+      }
       setErrors({})
     } catch (err) {
       // Error handling is done in the parent component
@@ -81,10 +85,13 @@ export function ActivityForm({ onSubmit, isSubmitting = false }: ActivityFormPro
           <div className="w-5 h-5 bg-blue-500 rounded flex items-center justify-center">
             <MessageSquare className="h-3 w-3 text-white" />
           </div>
-          Today&apos;s Update
+          {initialData ? "Edit Activity" : "Today's Update"}
         </CardTitle>
         <CardDescription className="text-gray-600">
-          Log your progress, tickets worked on, issues, or expected completions
+          {initialData 
+            ? "Update your activity details and meeting type"
+            : "Log your progress, tickets worked on, issues, or expected completions"
+          }
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -141,7 +148,10 @@ export function ActivityForm({ onSubmit, isSubmitting = false }: ActivityFormPro
           className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0"
         >
           <Check className="h-4 w-4 mr-2" />
-          {isSubmitting ? "Submitting..." : "Submit Update"}
+          {isSubmitting 
+            ? (initialData ? "Updating..." : "Submitting...") 
+            : (initialData ? "Update Activity" : "Submit Update")
+          }
         </Button>
       </CardContent>
     </Card>

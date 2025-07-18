@@ -15,6 +15,7 @@ interface ActivityListProps {
   description?: string
   emptyMessage?: string
   isAdmin?: boolean
+  onRefresh?: () => void
 }
 
 export function ActivityList({
@@ -24,8 +25,61 @@ export function ActivityList({
   title,
   description,
   emptyMessage = "No activities found",
-  isAdmin = false
+  isAdmin = false,
+  onRefresh
 }: ActivityListProps) {
+  const handleEdit = async (updatedActivity: Activity) => {
+    try {
+      const response = await fetch('/api/activities', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: updatedActivity.id,
+          meetingType: updatedActivity.meetingType,
+          activityDetails: updatedActivity.summary,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update activity')
+      }
+
+      // Refresh the activities list
+      if (onRefresh) {
+        onRefresh()
+      }
+    } catch (error) {
+      console.error('Error updating activity:', error)
+      throw error // Re-throw to let the ActivityCard handle the error
+    }
+  }
+
+  const handleDelete = async (activityId: string) => {
+    try {
+      const response = await fetch(`/api/activities?id=${activityId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete activity')
+      }
+
+      // Refresh the activities list
+      if (onRefresh) {
+        onRefresh()
+      }
+    } catch (error) {
+      console.error('Error deleting activity:', error)
+      throw error // Re-throw to let the ActivityCard handle the error
+    }
+  }
+
   if (loading) {
     return (
       <Card className="shadow-sm border-gray-200">
@@ -74,14 +128,21 @@ export function ActivityList({
           {title}
         </CardTitle>
         <CardDescription className="text-gray-600">
-          Your activity logs from the past 7 days
+          {description || "Your activity logs from the past 7 days"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {activities.length > 0 ? (
           <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
             {activities.map((activity) => (
-              <ActivityCard key={activity.id} activity={activity} isAdmin={isAdmin} />
+              <ActivityCard 
+                key={activity.id} 
+                activity={activity} 
+                isAdmin={isAdmin}
+                showActions={true}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
             ))}
           </div>
         ) : (

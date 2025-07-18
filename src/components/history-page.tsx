@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { format, isSameDay, startOfDay, endOfDay } from "date-fns"
+import { format, isSameDay } from "date-fns"
 import { CalendarView } from "@/components/calendar-view"
 import { ActivityList } from "@/components/activity-list"
 import { useActivities } from "@/hooks/useActivities"
@@ -14,7 +14,7 @@ export function HistoryPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
   const { isAdmin } = useUser()
   
-  const { activities, loading, error } = useActivities({
+  const { activities, loading, error, refetch } = useActivities({
     days: 365, // Get a full year of activities
     limit: 100, // Stay within API limits
     isAdmin: isAdmin
@@ -92,6 +92,7 @@ export function HistoryPage() {
           description={getActivityListDescription()}
           emptyMessage={selectedDate ? "No activities logged for this date" : "Select a date from the calendar to view your activities"}
           isAdmin={isAdmin}
+          onRefresh={refetch}
         />
       </div>
     </div>

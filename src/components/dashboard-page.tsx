@@ -94,6 +94,7 @@ export function DashboardPage() {
           error={activitiesError}
           title="Recent Submissions"
           emptyMessage="No recent submissions found"
+          onRefresh={refetch}
         />
       </div>
     </div>

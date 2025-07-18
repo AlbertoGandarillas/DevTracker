@@ -157,3 +157,105 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
     return createErrorResponse('Internal server error', 500);
   }
 }); 
+
+export const PUT = requireAuth(async (request: NextRequest, user: AuthenticatedUser) => {
+  try {
+    const body = await request.json();
+    const { id, meetingType, activityDetails } = body;
+
+    // Validation
+    if (!id) {
+      return createErrorResponse('Activity ID is required');
+    }
+
+    if (!meetingType || !meetingType.trim()) {
+      return createErrorResponse('Meeting type is required');
+    }
+
+    if (!activityDetails || !activityDetails.trim()) {
+      return createErrorResponse('Activity details are required');
+    }
+
+    const prisma = await import('@/lib/prisma').then(m => m.prisma);
+
+    // Check if activity exists and belongs to the user (or user is admin)
+    const existingActivity = await prisma.devTracker_Activity.findUnique({
+      where: { id },
+      include: { user: true }
+    });
+
+    if (!existingActivity) {
+      return createErrorResponse('Activity not found', 404);
+    }
+
+    // Only allow users to edit their own activities, or admins to edit any
+    if (existingActivity.userId !== user.dbUser.id && user.dbUser.role !== 'admin') {
+      return createErrorResponse('Access denied', 403);
+    }
+
+    // Update the activity
+    const updatedActivity = await prisma.devTracker_Activity.update({
+      where: { id },
+      data: {
+        meetingType: meetingType.trim(),
+        note: activityDetails.trim(),
+        progress: activityDetails.trim(),
+      },
+    });
+
+    return createSuccessResponse({
+      activity: {
+        id: updatedActivity.id,
+        meetingType: updatedActivity.meetingType,
+        note: updatedActivity.note,
+        date: updatedActivity.date,
+        createdAt: updatedActivity.createdAt
+      }
+    });
+
+  } catch (error) {
+    console.error('Error updating activity:', error);
+    return createErrorResponse('Internal server error', 500);
+  }
+});
+
+export const DELETE = requireAuth(async (request: NextRequest, user: AuthenticatedUser) => {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return createErrorResponse('Activity ID is required');
+    }
+
+    const prisma = await import('@/lib/prisma').then(m => m.prisma);
+
+    // Check if activity exists and belongs to the user (or user is admin)
+    const existingActivity = await prisma.devTracker_Activity.findUnique({
+      where: { id },
+      include: { user: true }
+    });
+
+    if (!existingActivity) {
+      return createErrorResponse('Activity not found', 404);
+    }
+
+    // Only allow users to delete their own activities, or admins to delete any
+    if (existingActivity.userId !== user.dbUser.id && user.dbUser.role !== 'admin') {
+      return createErrorResponse('Access denied', 403);
+    }
+
+    // Delete the activity
+    await prisma.devTracker_Activity.delete({
+      where: { id }
+    });
+
+    return createSuccessResponse({
+      message: 'Activity deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting activity:', error);
+    return createErrorResponse('Internal server error', 500);
+  }
+}); 
