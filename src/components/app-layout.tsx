@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation"
 import { UserButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Logo } from "@/components/ui/logo"
 import { Activity, Calendar, Settings, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUser } from "@/hooks/useUser"
@@ -61,12 +62,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       )}>
         <div className="max-w-7xl mx-auto px-6 flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-md flex items-center justify-center">
-                <Activity className="h-4 w-4 text-white" />
-              </div>
-              <span className="font-bold text-xl text-gray-900">DevTracker</span>
-            </Link>
+            <Logo href="/" />
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-2">
