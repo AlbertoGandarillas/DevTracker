@@ -1,11 +1,13 @@
 "use client"
 
-import { useMemo } from "react"
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns"
+import { useMemo, useState } from "react"
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks } from "date-fns"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { ActivityCard } from "@/components/activity-card"
 import { parseActivityDate } from "@/lib/utils"
 import { AdminActivity } from "@/types"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface WeeklyViewProps {
   activities: AdminActivity[]
@@ -13,11 +15,25 @@ interface WeeklyViewProps {
 }
 
 export function WeeklyView({ activities, loading = false }: WeeklyViewProps) {
+  const [currentWeek, setCurrentWeek] = useState(new Date())
+
   // Get current week (Monday to Friday)
-  const now = new Date()
-  const weekStart = startOfWeek(now, { weekStartsOn: 1 }) // Monday
-  const weekEnd = endOfWeek(now, { weekStartsOn: 1 }) // Sunday
+  const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }) // Monday
+  const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 }) // Sunday
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd }).slice(0, 5) // Monday to Friday only
+
+  // Navigation functions
+  const goToPreviousWeek = () => {
+    setCurrentWeek(prev => subWeeks(prev, 1))
+  }
+
+  const goToNextWeek = () => {
+    setCurrentWeek(prev => addWeeks(prev, 1))
+  }
+
+  const goToCurrentWeek = () => {
+    setCurrentWeek(new Date())
+  }
 
   // Group activities by day and sort by user and datetime
   const activitiesByDay = useMemo(() => {
@@ -55,7 +71,7 @@ export function WeeklyView({ activities, loading = false }: WeeklyViewProps) {
   }, [activities, weekDays])
 
   const getDayHeader = (date: Date) => {
-    const isToday = isSameDay(date, now)
+    const isToday = isSameDay(date, new Date())
     return (
       <div className={`text-center p-3 ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'} border-b`}>
         <div className="font-semibold text-gray-900">
@@ -87,12 +103,42 @@ export function WeeklyView({ activities, loading = false }: WeeklyViewProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          Weekly View
-          <span className="text-sm font-normal text-gray-500">
-            {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
-          </span>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            Weekly View
+            <span className="text-sm font-normal text-gray-500">
+              {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
+            </span>
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousWeek}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToCurrentWeek}
+              className="text-xs"
+            >
+              This Week
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextWeek}
+              className="flex items-center gap-1"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-5 gap-4">
