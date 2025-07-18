@@ -36,6 +36,7 @@ export const MEETING_TYPES = [
   "Dev Meeting",
   "12pm Updates",
   "Stand-up",
+  "EOD Update",
 ] as const;
 
 // UI Configuration
