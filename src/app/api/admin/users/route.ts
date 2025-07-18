@@ -1,17 +1,19 @@
-import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireAdmin, createErrorResponse, createSuccessResponse, AuthenticatedUser } from '@/lib/api';
+import { requireAuth, createErrorResponse, createSuccessResponse } from '@/lib/api';
 
-export const GET = requireAdmin(async (request: NextRequest, user: AuthenticatedUser) => {
+export const GET = requireAuth(async () => {
   try {
-    // Fetch all users
+    const prisma = await import('@/lib/prisma').then(m => m.prisma);
+    
     const users = await prisma.devTracker_User.findMany({
-      orderBy: { name: 'asc' },
       select: {
         id: true,
         name: true,
         email: true,
+        role: true
       },
+      orderBy: {
+        name: 'asc'
+      }
     });
 
     return createSuccessResponse({ users });

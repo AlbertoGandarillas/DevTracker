@@ -1,9 +1,8 @@
 "use client"
 import { format } from "date-fns"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, User, Clock, Calendar } from "lucide-react"
+import { Edit, Trash2, User, Clock } from "lucide-react"
 import { parseActivityDate } from "@/lib/utils"
 
 import { Activity } from "@/types"
@@ -79,9 +78,10 @@ export function ActivityCard({
 
         {/* Summary */}
         <div className="pt-2 border-t border-gray-100">
-          <p className="text-sm text-gray-900 leading-relaxed line-clamp-3">
-            {activity.summary}
-          </p>
+          <div 
+            className="text-sm text-gray-900 leading-relaxed line-clamp-3 activity-content"
+            dangerouslySetInnerHTML={{ __html: activity.summary }}
+          />
         </div>
 
         {/* Tickets */}
@@ -145,7 +145,10 @@ export function ActivityCard({
           )}
         </div>
       </div>
-      <p className="text-sm text-gray-900 leading-relaxed">{activity.summary}</p>
+      <div 
+        className="text-sm text-gray-900 leading-relaxed activity-content"
+        dangerouslySetInnerHTML={{ __html: activity.summary }}
+      />
       {activity.tickets && activity.tickets.length > 0 && (
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-700">TICKETS:</span>

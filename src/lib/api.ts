@@ -50,7 +50,7 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
       email: email.toLowerCase(),
       dbUser: {
         id: dbUser.id,
-        name: dbUser.name,
+        name: dbUser.name || 'Unknown',
         email: dbUser.email,
         role: dbUser.role as 'admin' | 'user'
       }

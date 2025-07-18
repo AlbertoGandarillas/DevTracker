@@ -1,72 +1,81 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { requireAdmin, createErrorResponse, createSuccessResponse, AuthenticatedUser } from '@/lib/api';
+import { requireAuth, createErrorResponse, createSuccessResponse } from '@/lib/api';
 
-export const GET = requireAdmin(async (request: NextRequest, user: AuthenticatedUser) => {
+export const GET = requireAuth(async (request: NextRequest) => {
   try {
-    // Get query parameters
     const { searchParams } = new URL(request.url);
-    const days = searchParams.get('days') ? parseInt(searchParams.get('days')!) : 30;
-    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 100;
+    const days = parseInt(searchParams.get('days') || '7');
+    const limit = parseInt(searchParams.get('limit') || '50');
 
-    // Validate parameters
-    if (days < 1 || days > 365) {
-      return createErrorResponse('Days parameter must be between 1 and 365');
-    }
-    if (limit < 1 || limit > 100) {
-      return createErrorResponse('Limit parameter must be between 1 and 100');
-    }
-
-    // Calculate the date range
-    const endDate = new Date();
+    const prisma = await import('@/lib/prisma').then(m => m.prisma);
+    
+    // Get activities from the last N days
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
-
-    // Fetch all activities with user information
+    
     const activities = await prisma.devTracker_Activity.findMany({
       where: {
         date: {
-          gte: startDate,
-          lte: endDate,
-        },
+          gte: startDate
+        }
       },
       include: {
-        user: true,
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
       },
-      orderBy: [
-        { date: 'desc' },
-        { createdAt: 'desc' },
-      ],
-      take: limit,
+      orderBy: {
+        date: 'desc'
+      },
+      take: limit
     });
 
-    // Format activities for admin table
-    const formattedActivities = activities.map(activity => ({
-      id: activity.id,
-      developer: activity.user?.name || 'Unknown',
-      date: activity.date,
-      meetingType: activity.meetingType || 'Unknown',
-      summary: activity.note || activity.progress || '',
-      tickets: activity.tickets ? activity.tickets.split(',').map(t => t.trim()) : [],
-      submittedAt: activity.createdAt,
-    }));
+    // Get stats
+    const totalActivities = await prisma.devTracker_Activity.count();
+    const activeDevelopers = await prisma.devTracker_User.count({
+      where: {
+        activities: {
+          some: {
+            date: {
+              gte: startDate
+            }
+          }
+        }
+      }
+    });
 
-    // Stats
-    const totalActivities = formattedActivities.length;
-    const activeDevelopers = new Set(formattedActivities.map(a => a.developer)).size;
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    const thisWeek = formattedActivities.filter(a => new Date(a.date) >= weekAgo).length;
+    const thisWeekStart = new Date();
+    thisWeekStart.setDate(thisWeekStart.getDate() - 7);
+    const thisWeek = await prisma.devTracker_Activity.count({
+      where: {
+        date: {
+          gte: thisWeekStart
+        }
+      }
+    });
+
+    const formattedActivities = activities.map((activity) => ({
+      id: activity.id,
+      date: activity.date,
+      meetingType: activity.meetingType,
+      summary: activity.note || activity.progress || '',
+      timestamp: activity.createdAt,
+      developer: activity.user.name,
+      tickets: activity.tickets ? activity.tickets.split(',').map((t: string) => t.trim()) : [],
+      submittedAt: activity.createdAt
+    }));
 
     return createSuccessResponse({
       activities: formattedActivities,
       stats: {
         totalActivities,
         activeDevelopers,
-        thisWeek,
+        thisWeek
       }
     });
-
   } catch (error) {
     console.error('Error fetching admin activities:', error);
     return createErrorResponse('Internal server error', 500);

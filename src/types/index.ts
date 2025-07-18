@@ -27,13 +27,21 @@ export interface Stats {
   thisWeek: number
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   error?: string
   activities?: Activity[]
   users?: User[]
+  user?: User
   stats?: Stats
+}
+
+export interface AdminApiResponse {
+  success: boolean
+  activities?: AdminActivity[]
+  stats?: Stats
+  error?: string
 }
 
 export interface ActivityFormData {

@@ -1,12 +1,11 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { CalendarIcon, Clock, BarChart3 } from "lucide-react"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { ErrorMessage } from "@/components/ui/error-message"
+import { ActivityCard } from "@/components/activity-card"
+import { Clock, CalendarIcon } from "lucide-react"
 import { Activity } from "@/types"
-import { ActivityCard } from "./activity-card"
-import { LoadingSpinner } from "./ui/loading-spinner"
-import { ErrorMessage } from "./ui/error-message"
 
 interface ActivityListProps {
   activities: Activity[]

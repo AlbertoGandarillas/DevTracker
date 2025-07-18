@@ -27,8 +27,9 @@ export function useUser(): UseUserReturn {
       }
       
       setUser(data.user || null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch user');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -65,8 +66,9 @@ export function useUsers() {
       }
       
       setUsers(data.users || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch users');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

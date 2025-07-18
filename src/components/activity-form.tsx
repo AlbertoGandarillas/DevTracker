@@ -56,10 +56,11 @@ export function ActivityForm({ onSubmit, isSubmitting = false }: ActivityFormPro
       // Reset form on success
       setFormData({ meetingType: "", activityDetails: "" })
       setErrors({})
-    } catch (error) {
+    } catch (err) {
       // Error handling is done in the parent component
+      console.error('Form submission error:', err);
     }
-  }
+  };
 
   const updateField = (field: keyof ActivityFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -67,8 +68,8 @@ export function ActivityForm({ onSubmit, isSubmitting = false }: ActivityFormPro
     if (field === 'activityDetails') {
       setCharCount(value.length)
     }
-    // Clear error when user starts typing
-    if (errors[field]) {
+    // Clear error when user starts typing (only for fields that can have validation errors)
+    if ((field === 'meetingType' || field === 'activityDetails') && errors[field as keyof ValidationErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
   }

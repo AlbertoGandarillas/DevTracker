@@ -1,27 +1,33 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LucideIcon } from "lucide-react"
 
 interface StatsCardProps {
   title: string
-  value: string | number
-  description: string
+  value: number
   icon: LucideIcon
-  className?: string
+  description: string
   accentColor?: string
 }
 
-export function StatsCard({ title, value, description, icon: Icon, className, accentColor = "text-muted-foreground" }: StatsCardProps) {
+export function StatsCard({
+  title,
+  value,
+  icon: Icon,
+  description,
+  accentColor = "text-blue-600"
+}: StatsCardProps) {
   return (
-    <div className={`relative ${className}`}>
-      <div className="flex flex-col items-center text-center space-y-2">
-        <div className="flex items-center gap-2">
-          <Icon className={`h-5 w-5 ${accentColor}`} />
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold text-gray-900">{value}</span>
-            <span className="text-sm font-medium text-gray-600">{title}</span>
+    <div className="bg-white/50 backdrop-blur-sm border border-gray-200 rounded-lg p-4 space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-2xl font-bold text-gray-900">{value}</p>
+            <p className="text-sm text-gray-500">{description}</p>
           </div>
         </div>
-        <p className="text-xs text-gray-500">{description}</p>
+        <div className={`p-2 rounded-lg bg-gray-50 ${accentColor}`}>
+          <Icon className="h-6 w-6" />
+        </div>
       </div>
     </div>
   )

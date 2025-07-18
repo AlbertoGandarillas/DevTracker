@@ -59,7 +59,6 @@ export function CalendarView({
         <div className="grid grid-cols-7 gap-1">
           {calendarDays.map((day) => {
             const isCurrentMonth = day.getMonth() === currentDate.getMonth()
-            const isCurrentYear = day.getFullYear() === currentDate.getFullYear()
             
             return (
               <button

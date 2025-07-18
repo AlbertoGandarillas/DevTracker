@@ -1,24 +1,24 @@
 "use client"
 
 import { useMemo } from "react"
-import { Download, Calendar, Table } from "lucide-react"
-import { MaterialReactTable } from "material-react-table"
-import { Button } from "@/components/ui/button"
-import { StatsCard } from "@/components/ui/stats-card"
+import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table"
+import { WeeklyView } from "@/components/admin/WeeklyView"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { ErrorMessage } from "@/components/ui/error-message"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useAdminActivities } from "@/hooks/useActivities"
+import { Button } from "@/components/ui/button"
+import { StatsCard } from "@/components/ui/stats-card"
+import { useActivities } from "@/hooks/useActivities"
 import { useActivityFilters } from "@/hooks/useActivityFilters"
 import { AdminHeader } from "@/components/admin/AdminHeader"
 import { AdminFilters } from "@/components/admin/AdminFilters"
-import { WeeklyView } from "@/components/admin/WeeklyView"
-import { getAdminTableColumns } from "@/components/admin/tableConfig"
 import { exportActivitiesToExcel } from "@/lib/exportUtils"
-import { Activity, Users } from "lucide-react"
+import { parseActivityDate } from "@/lib/utils"
+import { Download, Calendar, Table, Activity, Users } from "lucide-react"
+import { AdminActivity } from "@/types"
 
 export function AdminPage() {
-  const { activities, stats, loading, error } = useAdminActivities()
+  const { activities, loading, error } = useActivities({ isAdmin: true })
   
   const {
     searchTerm,
@@ -30,12 +30,69 @@ export function AdminPage() {
     filteredActivities,
     meetingTypes,
     developers,
-  } = useActivityFilters({ activities })
+  } = useActivityFilters({ activities: activities as AdminActivity[] })
 
-  const columns = useMemo(() => getAdminTableColumns(), [])
+  const columns = useMemo<MRT_ColumnDef<AdminActivity>[]>(() => [
+    {
+      accessorKey: 'developer',
+      header: 'Developer',
+      size: 150,
+    },
+    {
+      accessorKey: 'date',
+      header: 'Date',
+      size: 120,
+      Cell: ({ cell }) => {
+        const date = parseActivityDate(cell.getValue<string>());
+        return date.toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'short'
+        });
+      },
+    },
+    {
+      accessorKey: 'meetingType',
+      header: 'Meeting Type',
+      size: 150,
+    },
+    {
+      accessorKey: 'summary',
+      header: 'Summary',
+      size: 300,
+    },
+    {
+      accessorKey: 'tickets',
+      header: 'Tickets',
+      size: 200,
+      Cell: ({ cell }) => {
+        const tickets = cell.getValue<string[]>();
+        return tickets?.length ? tickets.join(', ') : '-';
+      },
+    },
+    {
+      accessorKey: 'submittedAt',
+      header: 'Submitted',
+      size: 150,
+      Cell: ({ cell }) => {
+        const date = new Date(cell.getValue<string>());
+        return date.toLocaleString();
+      },
+    },
+  ], [])
 
   const handleExportExcel = () => {
     exportActivitiesToExcel(filteredActivities)
+  }
+
+  // Mock stats for now since useActivities doesn't return stats
+  const stats = {
+    totalActivities: activities.length,
+    activeDevelopers: new Set(activities.map(a => (a as AdminActivity).developer || a.userName || 'Unknown')).size,
+    thisWeek: activities.filter(a => {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return new Date(a.date) >= weekAgo;
+    }).length
   }
 
   if (loading) {
@@ -133,7 +190,7 @@ export function AdminPage() {
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="weekly" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              Weekly View
+              This Week
             </TabsTrigger>
             <TabsTrigger value="activities" className="flex items-center gap-2">
               <Table className="h-4 w-4" />
@@ -157,7 +214,7 @@ export function AdminPage() {
         <TabsContent value="activities" className="space-y-4">
           <MaterialReactTable
             columns={columns}
-            data={filteredActivities}
+            data={filteredActivities as AdminActivity[]}
             enableColumnFilters={false}
             enableSorting={true}
             enablePagination={true}

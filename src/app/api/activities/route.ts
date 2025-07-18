@@ -110,7 +110,7 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
     }
 
     // Build query
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (date) {
       // For specific date queries, use exact date match since the field is @db.Date
       const [year, month, day] = date.split('-').map(Number);

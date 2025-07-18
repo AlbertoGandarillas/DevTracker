@@ -1,28 +1,34 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { format } from "date-fns"
+import { useState, useMemo } from "react"
+import { format, isSameDay, startOfDay, endOfDay } from "date-fns"
 import { CalendarView } from "@/components/calendar-view"
 import { ActivityList } from "@/components/activity-list"
 import { useActivities } from "@/hooks/useActivities"
 import { useUser } from "@/hooks/useUser"
-import { isSameDay } from "date-fns"
 import { parseActivityDate } from "@/lib/utils"
+import { Activity } from "@/types"
 
 export function HistoryPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
-  const { user, isAdmin } = useUser()
-  
-  // Helper function to format date for API call
-  const formatDateForAPI = (date: Date) => {
-    return format(date, 'yyyy-MM-dd')
-  }
+  const { isAdmin } = useUser()
   
   const { activities, loading, error } = useActivities({
-    date: selectedDate ? formatDateForAPI(selectedDate) : undefined,
-    all: isAdmin
+    days: 365, // Get a full year of activities
+    limit: 100, // Stay within API limits
+    isAdmin: isAdmin
   })
+
+  // Filter activities for the selected date
+  const filteredActivities = useMemo(() => {
+    if (!selectedDate) return activities;
+    
+    return activities.filter((activity: Activity) => {
+      const activityDate = parseActivityDate(activity.date);
+      return isSameDay(activityDate, selectedDate);
+    });
+  }, [activities, selectedDate]);
 
   const hasActivityOnDate = (date: Date) => {
     return activities.some((activity) => isSameDay(parseActivityDate(activity.date), date))
@@ -47,8 +53,8 @@ export function HistoryPage() {
 
   const getActivityListDescription = () => {
     if (!selectedDate) return "Click on a calendar date to see your logged activities"
-    if (activities.length > 0) {
-      return `${activities.length} ${activities.length === 1 ? "entry" : "entries"} found`
+    if (filteredActivities.length > 0) {
+      return `${filteredActivities.length} ${filteredActivities.length === 1 ? "entry" : "entries"} found`
     }
     return "No activities found for this date"
   }
@@ -79,7 +85,7 @@ export function HistoryPage() {
 
         {/* Activity Details */}
         <ActivityList
-          activities={activities}
+          activities={filteredActivities}
           loading={loading}
           error={error}
           title={getActivityListTitle()}
