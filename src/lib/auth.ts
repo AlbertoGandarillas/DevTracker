@@ -28,17 +28,23 @@ export const authOptions: NextAuthOptions = {
       
       if (account?.provider === "google") {
         try {
+          const userEmail = user.email?.toLowerCase();
+          console.log("Looking for user with email:", userEmail);
+          
           // Check if user exists in DevTracker_Users table
           const existingUser = await prisma.devTracker_User.findUnique({
-            where: { email: user.email?.toLowerCase() }
+            where: { email: userEmail }
           })
           
           console.log("Database user lookup result:", existingUser ? "User found" : "User not found");
+          if (existingUser) {
+            console.log("Found user:", { id: existingUser.id, name: existingUser.name, role: existingUser.role });
+          }
           
           if (existingUser) {
             // Update user info if needed
             await prisma.devTracker_User.update({
-              where: { email: user.email?.toLowerCase() },
+              where: { email: userEmail },
               data: {
                 name: user.name || existingUser.name,
               }
@@ -52,6 +58,7 @@ export const authOptions: NextAuthOptions = {
           }
         } catch (error) {
           console.error("Error checking user authorization:", error)
+          console.error("Error details:", error instanceof Error ? error.message : error)
           return false
         }
       }
