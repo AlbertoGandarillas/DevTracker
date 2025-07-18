@@ -130,7 +130,6 @@ export function ActivityForm({ onSubmit, isSubmitting = false, initialData }: Ac
               className={cn(
                 errors.activityDetails ? "border-red-500" : ""
               )}
-              maxLength={500}
             />
             <div className="absolute bottom-2 right-2 text-xs text-gray-400 z-10">
               {charCount}/500 characters

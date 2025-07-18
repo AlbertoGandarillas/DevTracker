@@ -1,7 +1,6 @@
 import { type Metadata } from 'next'
 import {
   ClerkProvider,
-  SignInButton,
   SignedIn,
   SignedOut,
 } from '@clerk/nextjs'

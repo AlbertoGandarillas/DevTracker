@@ -18,7 +18,6 @@ interface RichTextEditorProps {
   onChange: (value: string) => void
   placeholder?: string
   className?: string
-  maxLength?: number
   disabled?: boolean
 }
 
@@ -27,7 +26,6 @@ export function RichTextEditor({
   onChange,
   placeholder = "Enter text...",
   className = "",
-  maxLength,
   disabled = false
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null)
