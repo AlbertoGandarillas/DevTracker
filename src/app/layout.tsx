@@ -44,7 +44,7 @@ export default function RootLayout({
           </SignedIn>
           <SignedOut>
             <div className="min-h-screen bg-background">
-              <main className="container py-6">
+              <main className="">
                 {children}
               </main>
             </div>
