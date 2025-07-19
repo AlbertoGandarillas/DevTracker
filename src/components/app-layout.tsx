@@ -191,7 +191,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       </header>
 
       {/* Main Content - flex-1 makes it take remaining space */}
-      <main className="flex-1 max-w-7xl mx-auto px-6 py-6">{children}</main>
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-6">{children}</main>
 
       {/* Footer - mt-auto pushes it to bottom on large screens, normal on mobile */}
       <footer className="border-t py-6 md:py-0 mt-auto">

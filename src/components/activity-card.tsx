@@ -86,20 +86,20 @@ export function ActivityCard({
 
   if (compact) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-3 space-y-3 hover:shadow-sm transition-shadow">
-        {/* Meeting Type Badge */}
+      <div className="bg-white border border-gray-200 rounded-lg p-3 space-y-3 hover:shadow-sm transition-shadow group">
+        {/* Meeting Type Badge and Actions */}
         <div className="flex items-center justify-between">
           <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-medium">
             {activity.meetingType}
           </Badge>
           {showActions && (
-            <div className="flex gap-1">
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className="h-6 w-6 hover:bg-blue-50 hover:text-blue-600"
                   >
                     <Edit className="h-3 w-3" />
                   </Button>
@@ -124,7 +124,7 @@ export function ActivityCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-destructive hover:text-destructive"
+                    className="h-6 w-6 text-red-500 hover:bg-red-50 hover:text-red-600"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>

@@ -164,6 +164,15 @@ export function WeeklyView({ activities, loading = false }: WeeklyViewProps) {
                         }}
                         isAdmin={true}
                         compact={true}
+                        showActions={true}
+                        onEdit={async (updatedActivity) => {
+                          // Handle edit functionality for admin
+                          console.log('Edit activity:', updatedActivity)
+                        }}
+                        onDelete={async (activityId) => {
+                          // Handle delete functionality for admin
+                          console.log('Delete activity:', activityId)
+                        }}
                       />
                     ))
                   ) : (

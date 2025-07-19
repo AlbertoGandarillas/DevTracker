@@ -59,6 +59,15 @@ export function AdminPage() {
       accessorKey: 'summary',
       header: 'Summary',
       size: 300,
+      Cell: ({ cell }) => {
+        const summary = cell.getValue<string>();
+        return (
+          <div 
+            className="text-sm text-gray-900 leading-relaxed max-w-full"
+            dangerouslySetInnerHTML={{ __html: summary }}
+          />
+        );
+      },
     },
     {
       accessorKey: 'tickets',
@@ -143,7 +152,7 @@ export function AdminPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6">
       {/* Header with Stats */}
       <AdminHeader stats={stats} />
 

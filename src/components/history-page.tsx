@@ -60,7 +60,7 @@ export function HistoryPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6">
       {/* Activity History Banner */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
