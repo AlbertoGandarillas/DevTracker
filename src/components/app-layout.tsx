@@ -82,7 +82,8 @@ export function AppLayout({ children }: AppLayoutProps) {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-2">
               {NAVIGATION.map((item) => {
-                if ('adminOnly' in item && item.adminOnly && !isAdmin) return null
+                // Skip Settings and admin-only items for non-admins
+                if (item.name === "Settings" || ('adminOnly' in item && item.adminOnly && !isAdmin)) return null
 
                 const isActive = pathname === item.href
                 const IconComponent = iconMap[item.icon as keyof typeof iconMap]
@@ -140,6 +141,14 @@ export function AppLayout({ children }: AppLayoutProps) {
                     <p className="font-medium truncate">{session?.user?.name}</p>
                     <p className="text-gray-500 truncate text-xs">{session?.user?.email}</p>
                   </div>
+                  <Link
+                    href="/settings"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Settings className="h-4 w-4 flex-shrink-0" />
+                    Settings
+                  </Link>
                   <button
                     onClick={() => signOut({ callbackUrl: '/sign-in' })}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
@@ -158,7 +167,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="md:hidden border-t border-gray-100 bg-white">
             <nav className="max-w-7xl mx-auto px-6 py-4 space-y-2">
               {NAVIGATION.map((item) => {
-                if ('adminOnly' in item && item.adminOnly && !isAdmin) return null
+                // Skip Settings and admin-only items for non-admins
+                if (item.name === "Settings" || ('adminOnly' in item && item.adminOnly && !isAdmin)) return null
 
                 const isActive = pathname === item.href
                 const IconComponent = iconMap[item.icon as keyof typeof iconMap]
