@@ -23,6 +23,7 @@ export const DATE_FORMATS = {
 export const NAVIGATION = [
   { name: "Dashboard", href: "/", icon: "Activity" },
   { name: "History", href: "/history", icon: "Calendar" },
+  { name: "Settings", href: "/settings", icon: "Settings" },
   { name: "Admin", href: "/admin", icon: "Settings", adminOnly: true },
 ] as const;
 

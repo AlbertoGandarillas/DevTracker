@@ -3,13 +3,29 @@ import { requireAuth, createErrorResponse, createSuccessResponse, AuthenticatedU
 
 export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedUser) => {
   try {
+    const prisma = await import('@/lib/prisma').then(m => m.prisma);
+    
+    // Get full user data including settings
+    const userData = await prisma.devTracker_User.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        timezone: true,
+        emailNotifications: true,
+        reminder12pm: true,
+        reminderEod: true,
+      },
+    });
+
+    if (!userData) {
+      return createErrorResponse('User not found', 404);
+    }
+
     return createSuccessResponse({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role
-      }
+      user: userData
     });
   } catch (error) {
     console.error('Error fetching user:', error);

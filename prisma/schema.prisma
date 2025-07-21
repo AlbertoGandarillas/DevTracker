@@ -19,8 +19,13 @@ model DevTracker_User {
   email     String     @unique @db.NVarChar(256)
   name      String?    @db.NVarChar(100)
   role      String     @default("user") @db.NVarChar(50)
+  timezone  String     @default("UTC") @db.NVarChar(50)
+  emailNotifications Boolean @default(true)
+  reminder12pm       Boolean @default(true)
+  reminderEod        Boolean @default(true)
   activities DevTracker_Activity[]
   createdAt DateTime   @default(now()) @db.DateTime2
+  updatedAt DateTime   @updatedAt @db.DateTime2
 
   @@map("DevTracker_Users")
 }
