@@ -6,19 +6,23 @@ export const GET = requireAuth(async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '7');
     const limit = parseInt(searchParams.get('limit') || '50');
+    const all = searchParams.get('all') === 'true';
 
     const prisma = await import('@/lib/prisma').then(m => m.prisma);
     
-    // Get activities from the last N days
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    // Build where clause
+    const where: { date?: { gte: Date } } = {};
+    if (!all) {
+      // Get activities from the last N days
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      where.date = {
+        gte: startDate
+      };
+    }
     
     const activities = await prisma.devTracker_Activity.findMany({
-      where: {
-        date: {
-          gte: startDate
-        }
-      },
+      where,
       include: {
         user: {
           select: {
@@ -30,17 +34,21 @@ export const GET = requireAuth(async (request: NextRequest) => {
       orderBy: {
         date: 'desc'
       },
-      take: limit
+      ...(all ? {} : { take: limit })
     });
 
     // Get stats
     const totalActivities = await prisma.devTracker_Activity.count();
+    
+    // Calculate active developers based on recent activity
+    const recentActivityStart = new Date();
+    recentActivityStart.setDate(recentActivityStart.getDate() - days);
     const activeDevelopers = await prisma.devTracker_User.count({
       where: {
         activities: {
           some: {
             date: {
-              gte: startDate
+              gte: recentActivityStart
             }
           }
         }

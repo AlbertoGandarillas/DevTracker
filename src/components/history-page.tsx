@@ -15,9 +15,8 @@ export function HistoryPage() {
   const { isAdmin } = useUser()
   
   const { activities, loading, error, refetch } = useActivities({
-    days: 365, // Get a full year of activities
-    limit: 100, // Stay within API limits
-    isAdmin: isAdmin
+    isAdmin: isAdmin,
+    all: true // Get all activities for history view
   })
 
   // Filter activities for the selected date

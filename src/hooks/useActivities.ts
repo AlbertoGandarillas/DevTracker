@@ -5,6 +5,7 @@ interface UseActivitiesOptions {
   days?: number;
   limit?: number;
   isAdmin?: boolean;
+  all?: boolean;
 }
 
 interface UseActivitiesReturn {
@@ -14,7 +15,7 @@ interface UseActivitiesReturn {
   refetch: () => Promise<void>;
 }
 
-export function useActivities({ days = 7, limit = 10, isAdmin = false }: UseActivitiesOptions = {}): UseActivitiesReturn {
+export function useActivities({ days = 7, limit = 10, isAdmin = false, all = false }: UseActivitiesOptions = {}): UseActivitiesReturn {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +26,14 @@ export function useActivities({ days = 7, limit = 10, isAdmin = false }: UseActi
     
     try {
       const endpoint = isAdmin ? '/api/admin/activities' : '/api/activities';
-      const params = new URLSearchParams({
-        days: days.toString(),
-        limit: limit.toString()
-      });
+      const params = new URLSearchParams();
+      
+      if (all) {
+        params.append('all', 'true');
+      } else {
+        params.append('days', days.toString());
+        params.append('limit', limit.toString());
+      }
       
       const res = await fetch(`${endpoint}?${params}`);
       const data: ApiResponse | AdminApiResponse = await res.json();
@@ -50,7 +55,7 @@ export function useActivities({ days = 7, limit = 10, isAdmin = false }: UseActi
     } finally {
       setLoading(false);
     }
-  }, [days, limit, isAdmin]);
+  }, [days, limit, isAdmin, all]);
 
   useEffect(() => {
     fetchActivities();

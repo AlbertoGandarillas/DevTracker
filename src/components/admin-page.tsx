@@ -18,7 +18,7 @@ import { Download, Calendar, Table, Activity, Users } from "lucide-react"
 import { AdminActivity } from "@/types"
 
 export function AdminPage() {
-  const { activities, loading, error } = useActivities({ isAdmin: true })
+  const { activities, loading, error } = useActivities({ isAdmin: true, all: true })
   
   const {
     searchTerm,
