@@ -7,6 +7,8 @@ function getCurrentTimeInTimezone(timezone: string): Date {
   return new Date(new Date().toLocaleString('en-US', { timeZone: timezone }));
 }
 
+
+
 // Helper function to check if user has submitted today
 async function hasUserSubmittedToday(userId: string, date: Date): Promise<boolean> {
   const startOfDay = new Date(date);
@@ -79,18 +81,29 @@ export async function GET(request: NextRequest) {
         // Check if user has already submitted today
         const hasSubmittedToday = await hasUserSubmittedToday(user.id, userTime);
         
+        // Check for reminders based on current UTC time
+        // Cron runs at 12:00 UTC and 18:00 UTC
+        const currentUTCHour = new Date().getUTCHours();
         let shouldSendReminder = false;
         let reminderType: '12pm' | 'eod' | null = null;
         
-        // Check for 12pm reminder (between 12:00 and 12:59)
-        if (userHour === 12 && user.reminder12pm) {
-          shouldSendReminder = true;
-          reminderType = '12pm';
+        // At 12:00 UTC, send 12pm reminders to users in timezones where it's 12pm
+        if (currentUTCHour === 12 && user.reminder12pm) {
+          // Check if it's 12pm in user's timezone
+          const userHour = userTime.getHours();
+          if (userHour === 12) {
+            shouldSendReminder = true;
+            reminderType = '12pm';
+          }
         }
-        // Check for EOD reminder (between 18:00 and 18:59)
-        else if (userHour === 18 && user.reminderEod) {
-          shouldSendReminder = true;
-          reminderType = 'eod';
+        // At 18:00 UTC, send 6pm reminders to users in timezones where it's 6pm
+        else if (currentUTCHour === 18 && user.reminderEod) {
+          // Check if it's 6pm in user's timezone
+          const userHour = userTime.getHours();
+          if (userHour === 18) {
+            shouldSendReminder = true;
+            reminderType = 'eod';
+          }
         }
         
         if (shouldSendReminder && reminderType) {
