@@ -159,7 +159,7 @@ export function ActivityCard({
         </div>
 
         {/* User Info */}
-        {isAdmin && activity.userName && (
+        {activity.userName && (
           <div className="flex items-center gap-2">
             <User className="h-3 w-3 text-gray-400" />
             <span className="text-xs font-medium text-gray-700">
@@ -209,7 +209,7 @@ export function ActivityCard({
           <span className="text-sm text-gray-600 font-medium">
             {format(parseActivityDate(activity.date), "MMM d")}
           </span>
-          {isAdmin && activity.userName && (
+          {activity.userName && (
             <Badge variant="outline" className="text-xs">
               {activity.userName}
             </Badge>
