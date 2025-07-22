@@ -8,12 +8,18 @@ import { useSession } from "next-auth/react"
 import { ActivityForm } from "@/components/activity-form"
 import { ActivityList } from "@/components/activity-list"
 import { useActivities } from "@/hooks/useActivities"
+import { useUser } from "@/hooks/useUser"
 import { ActivityFormData } from "@/types"
 
 export function DashboardPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { data: session } = useSession()
-  const { activities, loading: loadingActivities, error: activitiesError, refetch } = useActivities({ days: 7, limit: 10 })
+  const { isAdmin } = useUser()
+  const { activities, loading: loadingActivities, error: activitiesError, refetch } = useActivities({ 
+    days: 7, 
+    limit: 10,
+    isAdmin: isAdmin 
+  })
 
   const handleSubmit = async (formData: ActivityFormData) => {
     setIsSubmitting(true)
@@ -92,8 +98,10 @@ export function DashboardPage() {
           activities={activities}
           loading={loadingActivities}
           error={activitiesError}
-          title="Recent Submissions"
-          emptyMessage="No recent submissions found"
+          title={isAdmin ? "Recent Team Submissions" : "Recent Submissions"}
+          description={isAdmin ? "Team activity logs from the past 7 days" : "Your activity logs from the past 7 days"}
+          emptyMessage={isAdmin ? "No recent team submissions found" : "No recent submissions found"}
+          isAdmin={isAdmin}
           onRefresh={refetch}
         />
       </div>

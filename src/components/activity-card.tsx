@@ -201,21 +201,17 @@ export function ActivityCard({
   // Original layout (default)
   return (
     <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-medium">
-            {activity.meetingType}
-          </Badge>
-          <span className="text-sm text-gray-600 font-medium">
-            {format(parseActivityDate(activity.date), "MMM d")}
-          </span>
-          {activity.userName && (
-            <Badge variant="outline" className="text-xs">
-              {activity.userName}
+              <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs font-medium">
+              {activity.meetingType}
             </Badge>
-          )}
-        </div>
+            <span className="text-sm text-gray-600 font-medium">
+              {format(parseActivityDate(activity.date), "MMM d")}
+            </span>
+          </div>
         <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-gray-400" />
           <span className="text-sm text-gray-600 font-medium">
             {format(new Date(activity.timestamp), "h:mm a")}
           </span>
@@ -285,6 +281,16 @@ export function ActivityCard({
           )}
         </div>
       </div>
+      {/* User Info */}
+      {activity.userName && (
+        <div className="flex items-center gap-2">
+          <User className="h-3 w-3 text-gray-400" />
+          <span className="text-xs font-medium text-gray-700">
+            {activity.userName}
+          </span>
+        </div>
+      )}
+      
       <div 
         className="text-sm text-gray-900 leading-relaxed activity-content"
         dangerouslySetInnerHTML={{ __html: activity.summary }}

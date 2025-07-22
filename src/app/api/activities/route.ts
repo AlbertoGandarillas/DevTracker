@@ -111,24 +111,31 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
 
     // Build query
     const where: Record<string, unknown> = {};
-    if (date) {
-      // For specific date queries, use exact date match since the field is @db.Date
-      const [year, month, day] = date.split('-').map(Number);
-      // Create date in UTC to match database storage
-      const targetDate = new Date(Date.UTC(year, month - 1, day));
-      where.date = targetDate;
-    } else {
-      // For date range queries, use gte/lte
-      if (startDate && endDate) {
-        where.date = {
-          gte: startDate,
-          lte: endDate,
-        };
+    
+    // Date filtering - only apply if not fetching all activities
+    if (!all) {
+      if (date) {
+        // For specific date queries, use exact date match since the field is @db.Date
+        const [year, month, day] = date.split('-').map(Number);
+        // Create date in UTC to match database storage
+        const targetDate = new Date(Date.UTC(year, month - 1, day));
+        where.date = targetDate;
+      } else {
+        // For date range queries, use gte/lte
+        if (startDate && endDate) {
+          where.date = {
+            gte: startDate,
+            lte: endDate,
+          };
+        }
       }
     }
-    if (!(isAdmin && all)) {
+    
+    // User filtering: Non-admin users can only see their own activities
+    if (!isAdmin) {
       where.userId = user.id;
     }
+    // Admin users can see all activities (no userId filter needed)
 
     // Fetch activities
     const activities = await prisma.devTracker_Activity.findMany({
@@ -137,7 +144,7 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
         { date: 'desc' },
         { createdAt: 'desc' },
       ],
-      take: limit,
+      ...(all ? {} : { take: limit }), // Only apply limit if not fetching all
       include: { user: true },
     });
 
@@ -148,7 +155,7 @@ export const GET = requireAuth(async (request: NextRequest, user: AuthenticatedU
         meetingType: activity.meetingType,
         summary: activity.note || activity.progress || '',
         timestamp: activity.createdAt,
-        userName: isAdmin && all ? activity.user?.name : undefined,
+        userName: activity.user?.name,
       }))
     });
 
